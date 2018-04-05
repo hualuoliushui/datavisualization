@@ -1,0 +1,1 @@
+wsimport -p com.gss.datavisualization.webservice -s E:\IdeaProjects\datavisualization\src\main\java http://localhost:8001/ws/statistic.wsdl 
