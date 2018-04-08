@@ -62,19 +62,15 @@ function setRecords($scope, $http,$timeout) {
             method:'GET',
             url:'/statistic/getRecords?dataSourceId=' + dataSourceId
         }).then(function (value) {
-            console.log(dataSourceId);
             var result = value.data;
             if(result.errCode!=0){
                 deal_msg($scope,result,'result',$timeout);
                 return;
             }
             recordsMap[dataSourceId]=result.data;
-            console.log(i);
             if(i==0){
                 $scope.curDataSourceId = dataSourceId;
-                console.log("cur " + $scope.curDataSourceId)
                 $scope.records = recordsMap[dataSourceId];
-                console.log($scope.records);
             }
             deal_msg($scope,"成功获取统计记录","success",$timeout);
         },function (reason) {
@@ -90,7 +86,6 @@ function waitForCompletion($scope, $http,$interval,$timeout, dataSourceId) {
             url:'/statistic/isCompleted?dataSourceId='+dataSourceId
         }).then(function (value) {
             var result = value.data;
-            console.log(result);
             if(result.errCode!=0){
                 deal_msg($scope,result,'result',$timeout);
                 return;
@@ -114,8 +109,6 @@ function waitForCompletion($scope, $http,$interval,$timeout, dataSourceId) {
 function setStartCollecting($scope, $http,$interval,$timeout) {
     $scope.startCollecting = function (context) {
         if(!context) return;
-        console.log(context.dataSource);
-        console.log("开始统计")
         var dataSourceId = context.dataSource.id
         $http({
             method:'GET',
@@ -137,8 +130,6 @@ function setStartCollecting($scope, $http,$interval,$timeout) {
 function setDeleteDataSource($scope, $http, $timeout) {
     $scope.deleteDataSource = function (context) {
         if(!context) return;
-        console.log(context.dataSource);
-        console.log("删除数据源");
         var dataSourceId = context.dataSource.id;
         $http({
             method:'GET',
@@ -166,7 +157,6 @@ function viewRecordsHelper($scope,dataSourceId) {
 function setViewRecords($scope) {
     $scope.viewRecords = function (context) {
         if(!context) return;
-        console.log(context);
         viewRecordsHelper($scope,context.dataSource.id);
     }
 }
@@ -174,14 +164,12 @@ function setViewRecords($scope) {
 function setDeleteRecord($scope,$http,$timeout) {
     $scope.deleteRecord = function (context) {
         if(!context) return;
-        console.log(context);
         var recordId = context.record.id;
         var dataSourceId = context.record.dataSourceId;
         $http({
             method:'GET',
             url:'/statistic/deleteRecord?recordId='+recordId,
         }).then(function (value) {
-            console.log(recordId,dataSourceId)
             var result = value.data;
             if(result.errCode!=0){
                 deal_msg($scope,result,'result',$timeout);
@@ -197,8 +185,6 @@ function setDeleteRecord($scope,$http,$timeout) {
 
 function setAddDataSource($scope, $http, $timeout) {
     $scope.addDataSource = function (context) {
-        console.log(context);
-        console.log("添加数据源");
         var host = $("#host").val() || $("#host").attr("placeholder");
         var port = $("#port").val() || $("#port").attr("placeholder");
         var data = {
@@ -210,8 +196,6 @@ function setAddDataSource($scope, $http, $timeout) {
             url:'/statistic/addDataSource',
             data:data
         }).then(function (value) {
-            console.log(data)
-            console.log(value);
             var result = value.data;
             if(result.errCode!=0){
                 deal_msg($scope,result,'result',$timeout);
@@ -228,35 +212,20 @@ function setAddDataSource($scope, $http, $timeout) {
     }
 }
 
-function removeItem(arr, proc, item,compare) {
-    compare = compare || function (x, y) {
-        if(x==y) return true;
-        else return false;
-    }
-    var temp = [];
-    for(var i=0,len=arr.length;i<len;i++){
-        if(!compare(arr[i][proc],item))
-            temp.push(arr[i]);
-    }
-    return temp;
-}
-
 function updateDataSource($scope, dataSourceId) {
-    $scope.dataSources = removeItem($scope.dataSources,"id",dataSourceId);
+    $scope.dataSources = util.removeItem($scope.dataSources,"id",dataSourceId);
     if($scope.curDataSourceId==dataSourceId)
         $scope.curDataSourceId=0;
 }
 
 function clearRecordsCache($scope, dataSourceId) {
     recordsMap[dataSourceId]=[];
-    console.log(dataSourceId);
-    console.log($scope.curDataSourceId);
     if(dataSourceId==$scope.curDataSourceId)
         $scope.records = [];
 }
 
 function deleteRecordCache($scope, recordId,dataSourceId) {
-    recordsMap[dataSourceId]=removeItem(recordsMap[dataSourceId] || [],"id",recordId);
+    recordsMap[dataSourceId]=util.removeItem(recordsMap[dataSourceId] || [],"id",recordId);
     if(dataSourceId==$scope.curDataSourceId)
         $scope.records = recordsMap[dataSourceId];
 }

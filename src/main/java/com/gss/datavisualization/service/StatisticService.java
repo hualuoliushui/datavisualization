@@ -10,6 +10,7 @@ import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -52,6 +53,13 @@ public class StatisticService {
         return ResultUtil.resultGoodReturner(goodDetailMapper.getGoodDetails(record_id));
     }
 
+    public Result getData(int recordId){
+        List<Object> list = new LinkedList<>();
+        list.add(merchantDetailMapper.getMerchantDetails(recordId));
+        list.add(goodTypeDetailMapper.getGoodTypeDetails(recordId));
+        return ResultUtil.resultGoodReturner(list);
+    }
+
     public Result getDataSources() {
         return ResultUtil.resultGoodReturner(dataSourceMapper.getDataSources());
     }
@@ -76,4 +84,5 @@ public class StatisticService {
     public Result getNewestRecord(int data_source_id){
         return ResultUtil.resultGoodReturner(recordMapper.getNewest(data_source_id));
     }
+
 }

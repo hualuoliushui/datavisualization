@@ -8,11 +8,12 @@
     <title>首页</title>
 
     <link href="/js/lib/bootstrap/css/bootstrap.css" rel="stylesheet"/>
+    <link href="/js/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet"/>
     <link href="/css/page/index.css" rel="stylesheet"/>
 </head>
 <body>
 <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">数据展示平台</a>
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">数据展示平台</a>
     <div class="form-control form-control-dark w-100" style="background:#000">
         <select id="record">
         <#list records as record>
@@ -25,6 +26,9 @@
             </#if>
         </#list>
         </select>
+    </div>
+    <div class="form-control form-control-dark w-100" style="background:#000">
+        <div id="msg"></div>
     </div>
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
@@ -49,15 +53,32 @@
                             商品
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link data_type" href="#" value="3">
+                            <span data-feather="file"></span>
+                            商品流向
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>
-
         <main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                 <h1 id="sub-title" class="h2"></h1>
                 <div class="btn-toolbar mb-2 mb-md-0">
                     <div class="btn-group mr-2">
+                        <div id="good_type_div">
+                            <select multiple="multiple" id="good_type">种类</select>
+                        </div>
+                        <div id="start_point_div">
+                            <select multiple="multiple" id="start_point">起点</select>
+                        </div>
+                        <div id="end_point_div">
+                            <select multiple="multiple" id="end_point">终点</select>
+                        </div>
+                        <div id="year_div">
+                            <select multiple="multiple" id="year">年份</select>
+                        </div>
                         <button class="btn btn-sm btn-outline-secondary" id="export_chart">导出</button>
                         <select class="btn btn-sm btn-outline-secondary" id="chart_type">
                             <option value="1">中国地图</option>
@@ -78,18 +99,22 @@
     </div>
 </div>
 
-
-
 <script src="/js/lib/jquery/jquery-3.3.1.js"></script>
+<#--boostrap-multiselect.js -> popper.js -->
+<#--popper.js必须在bootstrap.js之前加载-->
+<script src="/js/lib/bootstrap/js/popper.js"></script>
 <script src="/js/lib/bootstrap/js/bootstrap.js"></script>
-
-
+<#--<script src="/js/lib/bootstrap/js/require.js"></script>-->
+<script src="/js/lib/bootstrap/js/bootstrap-multiselect.js"></script>
 <script src="/js/lib/d3/d3.js"></script>
+<script src="/js/lib/svg2png/saveSvgAsPng.js"></script>
+
 <script src="/js/common/province_coordinates.js"></script>
 <script src="/js/common/util.js"></script>
 <script src="/js/common/pie.js"></script>
 <script src="/js/common/chinaMap.js"></script>
 <script src="/js/common/chartLine.js"></script>
+
 <script src="/js/page/index.js"></script>
 </body>
 </html>

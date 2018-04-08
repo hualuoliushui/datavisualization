@@ -12,7 +12,7 @@
 </head>
 <body ng-app="dataSourceApp" ng-controller="dataSourceController">
 <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="/">数据源及数据记录管理</a>
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">数据源及数据记录管理</a>
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
             <a class="nav-link" href="/">统计结果分析</a>
@@ -117,7 +117,9 @@
 
 <script src="/js/lib/jquery/jquery-3.3.1.js"></script>
 <script src="/js/lib/bootstrap/js/bootstrap.js"></script>
-<#--<script src="/js/lib/d3/d3.js"></script>-->
+
+<script src="/js/common/util.js"></script>
+
 <script src="/js/page/record.js"></script>
 
 

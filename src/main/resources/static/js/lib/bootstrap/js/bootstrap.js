@@ -4,8 +4,8 @@
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
   */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('jquery'), require('popper.js')) :
-	typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'popper.js'], factory) :
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('jquery'), require('static/js/lib/bootstrap/js/popper.js')) :
+	typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'static/js/lib/bootstrap/js/popper.js'], factory) :
 	(factory((global.bootstrap = {}),global.jQuery,global.Popper));
 }(this, (function (exports,$,Popper) { 'use strict';
 
@@ -1521,7 +1521,7 @@ var Dropdown = function ($$$1) {
 
       if (showEvent.isDefaultPrevented()) {
         return;
-      } // Disable totally Popper.js for Dropdown in Navbar
+      } // Disable totally popper.js for Dropdown in Navbar
 
 
       if (!this._inNavbar) {
@@ -1530,7 +1530,7 @@ var Dropdown = function ($$$1) {
          * Popper - https://popper.js.org
          */
         if (typeof Popper === 'undefined') {
-          throw new TypeError('Bootstrap dropdown require Popper.js (https://popper.js.org)');
+          throw new TypeError('Bootstrap dropdown require popper.js (https://popper.js.org)');
         }
 
         var element = this._element; // For dropup with alignment we use the parent as popper container
@@ -2539,7 +2539,7 @@ var Tooltip = function ($$$1) {
        * Popper - https://popper.js.org
        */
       if (typeof Popper === 'undefined') {
-        throw new TypeError('Bootstrap tooltips require Popper.js (https://popper.js.org)');
+        throw new TypeError('Bootstrap tooltips require popper.js (https://popper.js.org)');
       } // private
 
 

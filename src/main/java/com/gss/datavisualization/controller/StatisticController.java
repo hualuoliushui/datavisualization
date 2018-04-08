@@ -51,6 +51,11 @@ public class StatisticController {
         return statisticService.getGoodTypeDetails(recordId);
     }
 
+    @RequestMapping(value = "/getData",method = RequestMethod.GET)
+    public Object getData(@RequestParam("recordId")int recordId){
+        return statisticService.getData(recordId);
+    }
+
     @RequestMapping(value = "/getGoodDetails",method = RequestMethod.GET)
     public Object getGoodDetails(@RequestParam("recordId")int recordId){
         return statisticService.getGoodDetails(recordId);

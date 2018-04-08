@@ -61,15 +61,17 @@ function ChinaMap(svg,width,height){
     }
 
     var _svg = svg;
+    var _main_china_json_features = null;
     // 小贴士
     var _tooltip = new ToolTip()
+    // interval_id
+    var _interval_ids = [];
 
     this.ToolTipMouseOver = function (_) {
         !arguments.length ? _tooltip.mouse_over : (_tooltip.mouse_over=_);
     }
 
-    var _provinces = null;
-    var _inited = false;
+    var _type = ["normal","flow"];
 
     // 地图坐标投影
     var projection = d3.geoMercator()
@@ -122,19 +124,15 @@ function ChinaMap(svg,width,height){
     //     .datum(grid)
     //     .attr("class","graticule")
     //     .attr("d",path);
-
-    this.draw = function (data, data_map, formatStr) {
-        var _this = this;
-        if(!_inited)
-            return _this.init(data,data_map, formatStr);
-        // console.log("draw")
-        // console.log(_provinces);
-        if(_provinces==null)
-            return;
-        // while(_provinces==null);
+    
+    function draw_normal(context,data, data_map,formatStr){
+        var _this=context;
         if(data && data_map){
+            hide_flow_eles();
             _this.ToolTipMouseOver(function (event,d,i) {
+                d = _main_china_json_features[i];
                 function getName(d) {
+                    if(!d) return "";
                     return d.properties.name;
                 }
                 if(!((typeof formatStr) =="string"))
@@ -167,29 +165,238 @@ function ChinaMap(svg,width,height){
                     return max_value;
                 });
             color_function = function (d,i) {
+                d = _main_china_json_features[i];
                 if(!d) return "white";
                 function getName(d) {
                     return d.properties.name;
                 }
                 var value = data_map[getName(d)] ? data_map[getName(d)] : 0;
                 var t = linear(value);
-                // console.log(t);
                 var t_color = computeColor(t);
                 return t_color.toString();
             }
 
-            _provinces
+            _svg.select("g.province")
+                .selectAll("path")
                 .on('mouseover',function (d, i) {
+                    d = _main_china_json_features[i];
                     _tooltip.mouse_over(d3.event,d,i);
                 })
                 .on('mousemove',function (d, i) {
+                    d = _main_china_json_features[i];
                     _tooltip.mouse_move(d3.event,d,i);
                 })
                 .on('mouseout',function (d, i) {
+                    d = _main_china_json_features[i];
                     _tooltip.mouse_out(d3.event,d,i);
                 })
                 .style("fill",color_function)
         }
+        // console.log("draw china complete")
+    }
+
+    function hide_normal_eles() {
+        _svg.select("g.province")
+            .selectAll("path")
+            .on('mouseover',null)
+            .on('mousemove',null)
+            .on('mouseout',null)
+            .style("fill","white");
+        _svg.select("#colorRect")
+            .attr("display","none");
+        _svg.select("#minValueText")
+            .attr("display","none")
+        _svg.select("#maxValueText")
+            .attr("display","none")
+    }
+
+    function hide_flow_eles() {
+        _svg.select("g.route-line")
+            .style("display","none");
+    }
+
+    function draw_flow(context,data,data_map,formatStr,ele_type) {
+        ele_type = ele_type || "line";
+        // console.log(arguments);
+        var _this=context;
+        // console.log("provinces_coordinates",provinces_coordinates)
+        if(data){
+            _this.ToolTipMouseOver(function (event,d,i) {
+                function getOuterHtml(ele) {
+                    return ele.prop("outerHTML");
+                }
+                if(!((typeof formatStr) =="string"))
+                    return;
+                var htmlStr = "无";
+                if(d[2]){
+                    var values = [];
+                    for(var key in d[1]){
+                        values.push(key);
+                    }
+                    htmlStr = values.join(",");
+                }
+                this.get_ele().html(formatStr.format(d[0][0],d[0][1],htmlStr))
+                    .style("left",(event.pageX)+"px")
+                    .style("top",(event.pageY+20)+"px")
+                    .style("opacity",1.0)
+            });
+            function default_set(operator,ele,ele_type) {
+                ele_type = ele_type || "line";
+                function sub_default_set(ele) {
+                    ele
+                        .on('mouseover',function (d, i) {
+                            _tooltip.mouse_over(d3.event,d,i);
+                        })
+                        .on('mousemove',function (d, i) {
+                            _tooltip.mouse_move(d3.event,d,i);
+                        })
+                        .on('mouseout',function (d, i) {
+                            _tooltip.mouse_out(d3.event,d,i);
+                        })
+                        .attr("marker-end","url(#arrow)")
+                        .attr("marker-start","url(#startPoint)");
+                }
+                function default_animation(ele,duration_time,ele_type){
+                    // 此处的ele_type 代表ele元素的种类，而不是update或者enter
+                    duration_time = duration_time || 1000;
+                    if(ele_type=="path"){
+                        ele
+                        // 使用path 在某些 路径上不能呈现 从0到最终地点的动画效果
+                            .attr("d",function (d) {
+                                if(!d) return;
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                var end_coord = provinces_coordinates[d[0][1]];
+                                return path({
+                                    type:"LineString",
+                                    coordinates:[start_coord,start_coord]
+                                });
+                            }).transition()
+                            .duration(duration_time)
+                            .attr("d",function (d) {
+                                if(!d) return;
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                var end_coord = provinces_coordinates[d[0][1]];
+                                return path({
+                                    type:"LineString",
+                                    coordinates:[start_coord,end_coord]
+                                });
+
+                            });
+                    }else{
+
+                        ele = ele
+                            .attr("x1",function (d) {
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                return projection(start_coord)[0];
+                            })
+                            .attr("y1",function (d) {
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                return projection(start_coord)[1];
+                            })
+                            .attr("x2",function (d) {
+                                var end_coord = provinces_coordinates[d[0][0]];
+                                return projection(end_coord)[0];
+                            })
+                            .attr("y2",function (d) {
+                                var end_coord = provinces_coordinates[d[0][0]];
+                                return projection(end_coord)[1];
+                            })
+                            .transition()
+                            .duration(duration_time)
+                            .attr("x1",function (d) {
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                return projection(start_coord)[0];
+                            })
+                            .attr("y1",function (d) {
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                return projection(start_coord)[1];
+                            })
+                            .attr("x2",function (d) {
+                                var end_coord = provinces_coordinates[d[0][1]];
+                                return projection(end_coord)[0];
+                            })
+                            .attr("y2",function (d) {
+                                var end_coord = provinces_coordinates[d[0][1]];
+                                return projection(end_coord)[1];
+                            });
+                    }
+
+                }
+                var duration_time = 1000;
+                if(operator=="enter" || operator=="update"){
+                    if(operator=="enter"){
+                        ele = ele.append(ele_type);
+                    }
+                    sub_default_set(ele)
+                    default_animation(ele,duration_time,ele_type);
+                }else if(operator=="exit"){
+                    if(ele_type=="path"){
+                        ele
+                            .transition()
+                            .duration(duration_time)
+                            .attr("d",function (d) {
+                                if(!d) return;
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                var end_coord = provinces_coordinates[d[0][0]];
+                                return path({
+                                    type:"LineString",
+                                    coordinates:[start_coord,end_coord]
+                                });
+
+                            })
+                            .remove();
+                    }else{
+                        ele
+                            .transition()
+                            .duration(duration_time)
+                            .attr("x1",function (d) {
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                return projection(start_coord)[0];
+                            })
+                            .attr("y1",function (d) {
+                                var start_coord = provinces_coordinates[d[0][0]];
+                                return projection(start_coord)[1];
+                            })
+                            .attr("x2",function (d) {
+                                var end_coord = provinces_coordinates[d[0][0]];
+                                return projection(end_coord)[0];
+                            })
+                            .attr("y2",function (d) {
+                                var end_coord = provinces_coordinates[d[0][0]];
+                                return projection(end_coord)[1];
+                            })
+                            .remove();
+                    }
+
+                }
+            }
+            hide_normal_eles();
+            // data.length = 5;
+            var update = _svg.select("g.route-line")
+                .style("display",null)
+                .selectAll(ele_type)
+                .data(data)
+            var enter = update.enter()
+            var exit = update.exit();
+            default_set("update",update,ele_type);
+            default_set("enter",enter,ele_type);
+            default_set("exit",exit,ele_type);
+        }
+    }
+
+    var draw_type = {normal:draw_normal,flow:draw_flow}
+
+    this.draw = function (data, data_map, formatStr, type) {
+        function clear_interval() {
+            for(var i=0,len=_interval_ids.length;i<len;i++){
+                clearInterval(_interval_ids[i]);
+            }
+            _interval_ids=[];
+        }
+        type = type || (~_type.indexOf(type) ? type : _type[0]);
+        // console.log(type)
+        var _this = this;
+        draw_type[type](_this,data,data_map,formatStr);
     }
 
     this.init_tip_color_rect = function () {
@@ -234,31 +441,22 @@ function ChinaMap(svg,width,height){
             .attr("display","none");
     }
 
-    this.init = function (data,data_map,formatStr) {
+    this.init = function (main_china_json) {
         var _this = this;
-        if(_inited)
-        {
-            _this.draw(data,data_map,formatStr);
-            return;
-        }
-        _inited=true;
+        _main_china_json_features = main_china_json.features;
         _this.init_tip_color_rect();
         // 中国大陆及港澳台
-        d3.json("/json/china.json",function (error, root) {
-            if(error)
-                return console.error(error);
+        _svg.append("g")
+            .attr("class","province")
+            .selectAll("path")
+            .data(_main_china_json_features)
+            .enter()
+            .append("path")
+            .style("fill",color_function)
+            .attr("d",path); // 使用路径生成器
 
-            var groups = _svg.append("g");
-            var paths = groups.selectAll("path")
-            _provinces = paths.data(root.features)
-                .enter()
-                .append("path")
-                .attr("class","province")
-                .style("fill",color_function)
-                .attr("d",path); // 使用路径生成器
-
-            _this.draw(data,data_map,formatStr);
-        })
+        _svg.append("g")
+            .attr("class","route-line");
 
         // 南海诸岛
         d3.xml("/svg/southchinasea.svg",function (error, xmlDocument) {

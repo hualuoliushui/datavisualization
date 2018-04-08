@@ -5,14 +5,17 @@ function ChartLine(svg,width,height){
     var _gxAxis = null,
         _xScale = null,
         _xAxis = null,
+        _xAxisTitle = null,
         _gyAxis = null,
         _yScale = null,
         _yAxis = null,
+        _yAxisTitle = null,
         _focusCirle = null,
         _focusLine = null,
         _vLine = null,
         _hLine = null,
-        _mouseRect = null;
+        _mouseRect = null,
+        _grid = null;
 
     this.init = function(width,height){
         _xScale = d3.scaleLinear();
@@ -24,6 +27,9 @@ function ChartLine(svg,width,height){
             .attr("class","axis")
             .attr("transform","translate("+padding.left+","+(height-padding.bottom)+")")
             .call(_xAxis);
+        _xAxisTitle = _svg.append("text")
+            .attr("class","axis-title")
+            .attr("transform","translate("+(width-padding.right)+","+(height-padding.bottom)+")")
 
         _yScale = d3.scaleLinear();
         // 定义坐标轴
@@ -33,11 +39,19 @@ function ChartLine(svg,width,height){
             .attr("class","axis")
             .attr("transform","translate("+padding.left+","+(padding.top)+")")
             .call(_yAxis);
+        _yAxisTitle = _svg.append("text")
+            .attr("class","axis-title")
+            .attr("transform","translate("+(padding.left)+","+(padding.top)+")")
+
+        _grid = _svg.append("g")
+            .attr("class","grid")
         init_axis_tip()
     }
 
-    this.draw = function (data_set, data_map,formatStr) {
-        // console.log(formatStr);
+    this.draw = function (data_set, data_map,formatStr,chart_line_title) {
+        chart_line_title = chart_line_title || {xAxis:"",yAxis:""};
+        chart_line_title["xAxis"] = chart_line_title["xAxis"] || "";
+        chart_line_title["yAxis"] = chart_line_title["yAxis"] || "";
         if(!data_set || !data_map)
             return;
         var year_min_max = d3.extent(data_set,function (value) {
@@ -54,8 +68,8 @@ function ChartLine(svg,width,height){
             .range([height-padding.top-padding.bottom,0]);
 
         draw_data_line(data_set);
-        draw_axis();
-
+        draw_axis(chart_line_title,data_set.length);
+        draw_grid();
         _mouseRect.on("mousemove",function () {
             // 获取鼠标相对透明矩形左上角的坐标，左上角坐标为(0,0)
             var temp = get_new_coordinate(this,_xScale,_yScale,data_set);
@@ -66,28 +80,27 @@ function ChartLine(svg,width,height){
 
     }
 
-    function default_set(ele,linePath,data_set){
-        if(!ele)
-            return;
-        var temp = [];
-
-        ele.attr("class","data-line")
-            .attr("transform","translate("+padding.left+","+padding.top+")")
-            .attr("d",function (d) {
-                var data_set = d.value;
-                for(var i=0,len=data_set.length;i<len;i++){
-                    temp.push([data_set[i][0],0]);
-                }
-                return linePath(temp)
-            })
-            .transition()
-            .duration(1000)
-            .attr("d",function (d) {
-                return linePath(d.value);
-            })
-    }
-
     function draw_data_line(data_set) {
+        function default_set(ele,linePath){
+            if(!ele)
+                return;
+            var temp = [];
+
+            ele.attr("class","data-line")
+                .attr("transform","translate("+padding.left+","+padding.top+")")
+                .attr("d",function (d) {
+                    var data_set = d.value;
+                    for(var i=0,len=data_set.length;i<len;i++){
+                        temp.push([data_set[i][0],0]);
+                    }
+                    return linePath(temp)
+                })
+                .transition()
+                .duration(1000)
+                .attr("d",function (d) {
+                    return linePath(d.value);
+                })
+        }
         // 直线生成器
         var linePath = d3.line()
             .curve(d3.curveCatmullRom)
@@ -102,23 +115,59 @@ function ChartLine(svg,width,height){
         var enter = update.enter();
         var exit = update.exit();
 
-        exit
-            // .transition()
-            // .duration(500)
-            // .attr("fill","white")
-            .remove();
-        console.log("default_set")
-        default_set(enter.append("path"),linePath,data_set);
-        default_set(update,linePath,data_set);
+        exit.remove();
+        default_set(enter.append("path"),linePath);
+        default_set(update,linePath);
     }
 
-    function draw_axis() {
+    function draw_axis(chart_line_title,xTicks) {
+        _xAxis.ticks(xTicks);
         _gxAxis.transition()
             .duration(2000)
             .call(_xAxis);
+        _xAxisTitle.text(chart_line_title["xAxis"]);
+
         _gyAxis.transition()
             .duration(2000)
             .call(_yAxis);
+        _yAxisTitle.text(chart_line_title["yAxis"]);
+    }
+
+    function draw_grid() {
+        var update = null,
+            enter = null,
+            exit = null;
+        function default_xLine_set(xLine) {
+            xLine
+                .attr("x1",_xScale)
+                .attr("x2",_xScale)
+                .attr("y2",padding.top)
+                .attr("y1",(height-padding.bottom))
+                .attr("transform","translate("+padding.left+",0)")
+        }
+        function default_yLine_set(yLine) {
+            yLine
+                .attr("y1",_yScale)
+                .attr("y2",_yScale)
+                .attr("x1",padding.left)
+                .attr("x2",(width-padding.left))
+                .attr("transform","translate(0,"+(padding.bottom)+")")
+        }
+        update = _grid.selectAll("line.grid-xLine")
+            .data(_xScale.ticks());
+        enter = update.enter()
+        default_xLine_set(update);
+        default_xLine_set(enter.append('line').attr("class","grid-xLine"))
+        exit = update.exit();
+        exit.remove();
+
+        update = _grid.selectAll("line.grid-yLine")
+            .data(_yScale.ticks());
+        enter = update.enter()
+        default_yLine_set(update);
+        default_yLine_set(enter.append('line').attr("class","grid-yLine"))
+        exit = update.exit();
+        exit.remove();
     }
 
     function init_axis_tip() {

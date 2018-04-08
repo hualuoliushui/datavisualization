@@ -1,4 +1,4 @@
-var provinces = {
+var provinces_coordinates = {
     "北京市":[116.4,39.9],
     "上海市":[121.5,31.2],
     "天津市":[117.2,39.1],

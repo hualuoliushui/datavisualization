@@ -114,6 +114,7 @@ body {
 .province {
     stroke: black;
     stroke-width: 1px;
+    pointer-events:all; // 表示即使有其他元素覆盖着该元素上，该元素也能捕捉到事件
 }
 
 .south-china-sea{
@@ -154,9 +155,18 @@ body {
 
 .focusLine {
     stroke:black;
-    stroke-width: 2;
+    stroke-width: 1;
     opacity:1.0;
-    fill:none
+    fill:none;
+    border-style: dotted;
+}
+
+.grid {
+    stroke:black;
+    stroke-width: 1;
+    opacity:0.2;
+    fill:none;
+    border-style: dotted;
 }
 
 .focusCircle {
@@ -170,9 +180,20 @@ body {
     fill:none;
 }
 
+g.route-line{
+    stroke:black;
+    stroke-width: 1;
+    opacity:1.0;
+    fill:none;
+}
+
 /*
  * Utilities
  */
 
 .border-top { border-top: 1px solid #e5e5e5; }
 .border-bottom { border-bottom: 1px solid #e5e5e5; }
+
+li.multi-select-selected a label {
+    color : khaki;
+}
