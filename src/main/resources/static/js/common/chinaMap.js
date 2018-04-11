@@ -22,6 +22,13 @@ function ChinaMap(svg,width,height){
         }
     }
 
+    var origin_properties = {
+        "stroke" : "black",
+        "stroke-width" : 1,
+        "fill" : "none",
+        "opacity":1.0
+    }
+
     function MarkerArrow(defs,id){
         var _defs = defs;
         var _id = id;
@@ -245,33 +252,44 @@ function ChinaMap(svg,width,height){
                 function sub_default_set(ele) {
                     ele
                         .on('mouseover',function (d, i) {
+                            console.log("mouseover",this);
+                            d3.select(this)
+                                .attr("stroke",'yellow')
+                                .attr("stroke-width",5)
                             _tooltip.mouse_over(d3.event,d,i);
                         })
                         .on('mousemove',function (d, i) {
                             _tooltip.mouse_move(d3.event,d,i);
                         })
                         .on('mouseout',function (d, i) {
+                            d3.select(this)
+                                .attr("stroke",origin_properties["stroke"])
+                                .attr("stroke-width",origin_properties["stroke-width"])
                             _tooltip.mouse_out(d3.event,d,i);
                         })
                         .attr("marker-end","url(#arrow)")
                         .attr("marker-start","url(#startPoint)");
                 }
-                function default_animation(ele,duration_time,ele_type){
+                function default_animation(ele,duration_time,ele_type,operator){
+                    console.log(arguments);
                     // 此处的ele_type 代表ele元素的种类，而不是update或者enter
                     duration_time = duration_time || 1000;
                     if(ele_type=="path"){
+                        if(operator=="enter"){
+                            // 使用path 在某些 路径上不能呈现 从0到最终地点的动画效果
+                            ele = ele
+                                .attr("d",function (d) {
+                                    if(!d) return;
+                                    var start_coord = provinces_coordinates[d[0][0]];
+                                    var end_coord = provinces_coordinates[d[0][1]];
+                                    return path({
+                                        type:"LineString",
+                                        coordinates:[start_coord,start_coord]
+                                    });
+                                }).transition()
+                                .duration(duration_time)
+                        }
                         ele
-                        // 使用path 在某些 路径上不能呈现 从0到最终地点的动画效果
-                            .attr("d",function (d) {
-                                if(!d) return;
-                                var start_coord = provinces_coordinates[d[0][0]];
-                                var end_coord = provinces_coordinates[d[0][1]];
-                                return path({
-                                    type:"LineString",
-                                    coordinates:[start_coord,start_coord]
-                                });
-                            }).transition()
-                            .duration(duration_time)
                             .attr("d",function (d) {
                                 if(!d) return;
                                 var start_coord = provinces_coordinates[d[0][0]];
@@ -283,26 +301,32 @@ function ChinaMap(svg,width,height){
 
                             });
                     }else{
-
-                        ele = ele
-                            .attr("x1",function (d) {
-                                var start_coord = provinces_coordinates[d[0][0]];
-                                return projection(start_coord)[0];
-                            })
-                            .attr("y1",function (d) {
-                                var start_coord = provinces_coordinates[d[0][0]];
-                                return projection(start_coord)[1];
-                            })
-                            .attr("x2",function (d) {
-                                var end_coord = provinces_coordinates[d[0][0]];
-                                return projection(end_coord)[0];
-                            })
-                            .attr("y2",function (d) {
-                                var end_coord = provinces_coordinates[d[0][0]];
-                                return projection(end_coord)[1];
-                            })
-                            .transition()
-                            .duration(duration_time)
+                        if(operator=="enter"){
+                            ele = ele
+                                .attr("stroke",'blue')
+                                .attr("stroke-width", 3)
+                                .attr("x1",function (d) {
+                                    var start_coord = provinces_coordinates[d[0][0]];
+                                    return projection(start_coord)[0];
+                                })
+                                .attr("y1",function (d) {
+                                    var start_coord = provinces_coordinates[d[0][0]];
+                                    return projection(start_coord)[1];
+                                })
+                                .attr("x2",function (d) {
+                                    var end_coord = provinces_coordinates[d[0][0]];
+                                    return projection(end_coord)[0];
+                                })
+                                .attr("y2",function (d) {
+                                    var end_coord = provinces_coordinates[d[0][0]];
+                                    return projection(end_coord)[1];
+                                })
+                                .transition()
+                                .duration(duration_time)
+                        }
+                        ele
+                            .attr("stroke",origin_properties["stroke"])
+                            .attr("stroke-width",origin_properties["stroke-width"])
                             .attr("x1",function (d) {
                                 var start_coord = provinces_coordinates[d[0][0]];
                                 return projection(start_coord)[0];
@@ -328,7 +352,15 @@ function ChinaMap(svg,width,height){
                         ele = ele.append(ele_type);
                     }
                     sub_default_set(ele)
-                    default_animation(ele,duration_time,ele_type);
+                    // if(operator=="enter"){ // 线的动画会影响鼠标选定
+                    //     _interval_ids.push(setInterval(function () {
+                    //         console.log("interval_id.length",_interval_ids.length);
+                    //         default_animation(ele,duration_time,ele_type,operator);
+                    //         },
+                    //         duration_time*1.5
+                    //     ));
+                    // }
+                    default_animation(ele,duration_time,ele_type,operator);
                 }else if(operator=="exit"){
                     if(ele_type=="path"){
                         ele
@@ -347,6 +379,8 @@ function ChinaMap(svg,width,height){
                             .remove();
                     }else{
                         ele
+                            .attr("stroke",'red')
+                            .attr("stroke-width", 3)
                             .transition()
                             .duration(duration_time)
                             .attr("x1",function (d) {
@@ -375,7 +409,9 @@ function ChinaMap(svg,width,height){
             var update = _svg.select("g.route-line")
                 .style("display",null)
                 .selectAll(ele_type)
-                .data(data)
+                .data(data,function (d) {
+                    return d[0][0]+"->"+d[0][1];
+                })
             var enter = update.enter()
             var exit = update.exit();
             default_set("update",update,ele_type);
@@ -396,6 +432,7 @@ function ChinaMap(svg,width,height){
         type = type || (~_type.indexOf(type) ? type : _type[0]);
         // console.log(type)
         var _this = this;
+        clear_interval();
         draw_type[type](_this,data,data_map,formatStr);
     }
 

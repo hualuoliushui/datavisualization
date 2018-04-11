@@ -185,6 +185,7 @@ g.route-line{
     stroke-width: 1;
     opacity:1.0;
     fill:none;
+    pointer-events:all; // 表示即使有其他元素覆盖着该元素上，该元素也能捕捉到事件
 }
 
 /*

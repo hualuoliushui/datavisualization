@@ -53,6 +53,12 @@ $(function () {
         d3.select("#msg").text(msg);
     }
 
+    var chart_types_descrip = [{value:1,text:"中国地图",group:d3.set([1,2,3])}
+    , {value:2,text:"饼图",group:d3.set([1,2])}
+    , {value:3,text:"折线图",group:d3.set([1,2])}
+    // , {value:4,text:"弦图",group:d3.set([3])}
+    ];
+
     var china_flow_description = new (function () {
         var _this = this;
         this.multi_select_options = {
@@ -69,7 +75,6 @@ $(function () {
         };
 
         function update_china_flow_chart() {
-            // if(data_type!=3) return;
             china_flow_description["update_data"]();
             draw_china_flow();
         }
@@ -512,21 +517,15 @@ $(function () {
     }
 
     function draw(data_type) {
-        var chart_select = $("#chart_type");
+        update_chart_type_select(data_type);
         if (!~data_types_description_indexes.indexOf(data_type))// 非常规数据类型，默认设为数据合并类型处理
         {
-            // 只存在一种图表进行显示
-            chart_type = 1;
-            chart_select.val(chart_type);
-            chart_select.attr("disabled", "disabled")
             show_filter_select();
-
             set_sub_title(data_type, "商品流向")
             draw_china_flow();
         }
         else {
             hide_filter_select();
-            chart_select.removeAttr("disabled");
             set_sub_title(data_type);
             draw_pie(data_type);
             draw_china(data_type);
@@ -614,38 +613,77 @@ $(function () {
     }
 
     function getCurSvg() {
-        var svg_doc = null,
-            svg = null;
+            var svg = null;
         switch (chart_type) {
             case 1:
                 svg = chart_china_map.svg();
-                svg_doc = $("#chinaMap").children()[0];
                 break;
             case 2:
                 svg = chart_pie.svg();
-                svg_doc = $("#pie").children()[0];
                 break;
             case 3:
                 svg = chart_line.svg();
-                svg_doc = $("#chartLine").children()[0];
                 break;
             default:
                 break;
         }
-        return [svg_doc, svg];
+        return svg;
     }
 
     function set_save_svg_callback() {
         $('#export_chart').click(function (event) {
-            var [svg_doc, svg] = getCurSvg();
-            setStyleFromCSS(svg_doc);
-            saveSvgAsPng(svg_doc, "chart.png");
+            var svg = getCurSvg();
+            setStyleFromCSS(svg.node());
+            saveSvgAsPng(svg.node(), "chart.png");
         })
     }
+    
+    function init_chart_type_select(data_type) {
+        data_type = data_type || 1;
+        update_chart_type_select(data_type);
+    }
+
+    function update_chart_type_select(data_type) {
+        function default_set(ele) {
+            ele.attr("value",function (d) {
+                return d["value"];
+            })
+                .text(function (d) {
+                    return d["text"];
+                })
+        }
+        var temp = [];
+        var isIncludingCur = false;
+        for(var i=0,len=chart_types_descrip.length;i<len;i++){
+            if(chart_types_descrip[i]["group"].has(data_type)){
+                temp.push(chart_types_descrip[i]);
+                if(chart_types_descrip[i]["value"]==chart_type){
+                    isIncludingCur = true;
+                }
+            }
+        }
+
+        temp.sort(function (a,b) { return a["value"]-b["value"]; });
+        console.log("temp",temp);
+        var update = d3.select("#chart_type").selectAll("option")
+            .data(temp)
+        var enter = update.enter();
+        var exit = update.exit();
+        default_set(update);
+        default_set(enter.append("option"));
+        exit.remove();
+        if(!isIncludingCur && temp.length>0){
+            chart_type=temp[0]["value"];
+            console.log("chart_type",chart_type);
+            $("#chart_type").val(chart_type);
+        }
+    }
+
 
     function init() {
         record_id = Number($("#record").val());
         data_type = Number($(".data_type.active").attr("value"));
+        init_chart_type_select();
         chart_type = Number($("#chart_type").val());
         hide_filter_select();
         set_sub_title(data_type);

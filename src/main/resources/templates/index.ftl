@@ -81,9 +81,9 @@
                         </div>
                         <button class="btn btn-sm btn-outline-secondary" id="export_chart">导出</button>
                         <select class="btn btn-sm btn-outline-secondary" id="chart_type">
-                            <option value="1">中国地图</option>
-                            <option value="2">饼图</option>
-                            <option value="3">折线图</option>
+                            <#--<option value="1">中国地图</option>-->
+                            <#--<option value="2">饼图</option>-->
+                            <#--<option value="3">折线图</option>-->
                         </select>
                     </div>
                 </div>
