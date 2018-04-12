@@ -93,6 +93,7 @@
                     <div class="col-md-12" id="chinaMap"></div>
                     <div class="col-md-12" id="pie"></div>
                     <div class="col-md-12" id="chartLine"></div>
+                    <div class="col-md-12" id="chartChord"></div>
                 </div>
             </div>
         </main>
@@ -114,6 +115,7 @@
 <script src="/js/common/pie.js"></script>
 <script src="/js/common/chinaMap.js"></script>
 <script src="/js/common/chartLine.js"></script>
+<script src="/js/common/chartChord.js"></script>
 
 <script src="/js/page/index.js"></script>
 </body>

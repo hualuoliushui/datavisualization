@@ -252,7 +252,7 @@ function ChinaMap(svg,width,height){
                 function sub_default_set(ele) {
                     ele
                         .on('mouseover',function (d, i) {
-                            console.log("mouseover",this);
+                            // console.log("mouseover",this);
                             d3.select(this)
                                 .attr("stroke",'yellow')
                                 .attr("stroke-width",5)
@@ -271,7 +271,7 @@ function ChinaMap(svg,width,height){
                         .attr("marker-start","url(#startPoint)");
                 }
                 function default_animation(ele,duration_time,ele_type,operator){
-                    console.log(arguments);
+                    // console.log(arguments);
                     // 此处的ele_type 代表ele元素的种类，而不是update或者enter
                     duration_time = duration_time || 1000;
                     if(ele_type=="path"){

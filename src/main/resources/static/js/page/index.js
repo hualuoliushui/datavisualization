@@ -7,6 +7,7 @@ $(function () {
     var chart_pie = null;
     var chart_china_map = null;
     var chart_line = null;
+    var chart_chord = null;
 
     var record_id = 0;
     var data_type = 0;
@@ -56,7 +57,7 @@ $(function () {
     var chart_types_descrip = [{value:1,text:"中国地图",group:d3.set([1,2,3])}
     , {value:2,text:"饼图",group:d3.set([1,2])}
     , {value:3,text:"折线图",group:d3.set([1,2])}
-    // , {value:4,text:"弦图",group:d3.set([3])}
+    , {value:4,text:"弦图",group:d3.set([3])}
     ];
 
     var china_flow_description = new (function () {
@@ -77,6 +78,7 @@ $(function () {
         function update_china_flow_chart() {
             china_flow_description["update_data"]();
             draw_china_flow();
+            draw_chord();
         }
 
         function select_all(type) {
@@ -148,6 +150,7 @@ $(function () {
         }
         var _data = null;
         var _show_data = null;
+        var _chord_show_data = null;
         this.set_data = function (data) {
             _data = data;
         };
@@ -195,12 +198,32 @@ $(function () {
                     })
                     if (sum > 0)
                         _show_data.push([[start_point, end_point], goodType_year_num, sum]);
-                })
+                });
             })
-
+            _this.update_chord_data(_show_data);
+        }
+        this.update_chord_data = function (show_data) {
+            if(!show_data && !provinces_coordinates) return;
+            var temp = d3.map(),
+                index = 0,
+                i = 0,
+                len = Object.keys(provinces_coordinates).length;
+            for(var key in provinces_coordinates){
+                temp.set(key,{index:index++,value:Array(...Array(len)).map((_) => 0)});
+            }
+            for(i=0,len=show_data.length;i<len;i++){
+                var start = show_data[i][0][0];
+                var end = show_data[i][0][1];
+                var sum = show_data[i][2];
+                temp.get(start)["value"][temp.get(end)["index"]]=sum;
+            }
+            _chord_show_data = temp;
         }
         this.get_show_data = function () {
             return _show_data;
+        }
+        this.get_chord_show_data = function () {
+            return _chord_show_data;
         }
     })();
 
@@ -293,7 +316,8 @@ $(function () {
             .attr("height", height), width, height);
         chart_line = new ChartLine(d3.select("#chartLine").append("svg").attr("width", width)
             .attr("height", height), width, height);
-
+        chart_chord = new ChartChord(d3.select("#chartChord").append("svg").attr("width",width)
+            .attr("height",height));
         chart_china_map.init(china_json);
     }
 
@@ -417,6 +441,11 @@ $(function () {
         if (!chart_china_map) return;
         chart_china_map.draw(china_flow_description["get_show_data"](), null, "<h4>生产地:</h4>{0}<br/><h4>销售地：</h4>{1}<br/><h4>商品：</h4>{2}", "flow")
     }
+    
+    function draw_chord() {
+        if(!chart_chord) return;
+        chart_chord.draw(china_flow_description["get_chord_show_data"]())
+    }
 
     function draw_china(data_type) {
         chart_china_map.draw(data_types_description[data_type].area_arr,
@@ -523,6 +552,7 @@ $(function () {
             show_filter_select();
             set_sub_title(data_type, "商品流向")
             draw_china_flow();
+            draw_chord();
         }
         else {
             hide_filter_select();
@@ -539,7 +569,7 @@ $(function () {
         chart_china_map.hide();
         chart_pie.hide();
         chart_line.hide();
-        // type = 3;
+        chart_chord.hide();
         switch (type) {
             case 1:
                 chart_china_map.show();
@@ -549,6 +579,9 @@ $(function () {
                 break;
             case 3:
                 chart_line.show();
+                break;
+            case 4:
+                chart_chord.show();
                 break;
             default:
                 break;
@@ -664,7 +697,6 @@ $(function () {
         }
 
         temp.sort(function (a,b) { return a["value"]-b["value"]; });
-        console.log("temp",temp);
         var update = d3.select("#chart_type").selectAll("option")
             .data(temp)
         var enter = update.enter();
@@ -674,7 +706,6 @@ $(function () {
         exit.remove();
         if(!isIncludingCur && temp.length>0){
             chart_type=temp[0]["value"];
-            console.log("chart_type",chart_type);
             $("#chart_type").val(chart_type);
         }
     }
