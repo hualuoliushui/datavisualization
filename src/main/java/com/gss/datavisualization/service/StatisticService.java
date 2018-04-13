@@ -10,8 +10,9 @@ import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @create 2018-03-14 16:01
@@ -42,7 +43,7 @@ public class StatisticService {
     }
 
     public Result getMerchantDetails(int record_id){
-        return ResultUtil.resultGoodReturner(merchantDetailMapper.getMerchantDetails(record_id));
+        return ResultUtil.resultGoodReturner(merchantDetailMapper.getMerchantDetails(record_id,0,Integer.MAX_VALUE));
     }
 
     public Result getGoodTypeDetails(int record_id){
@@ -53,11 +54,17 @@ public class StatisticService {
         return ResultUtil.resultGoodReturner(goodDetailMapper.getGoodDetails(record_id));
     }
 
-    public Result getData(int recordId){
-        List<Object> list = new LinkedList<>();
-        list.add(merchantDetailMapper.getMerchantDetails(recordId));
-        list.add(goodTypeDetailMapper.getGoodTypeDetails(recordId));
-        return ResultUtil.resultGoodReturner(list);
+    public Result getNumOfData(int recordId){
+        return ResultUtil.resultGoodReturner(merchantDetailMapper.getTotal_getMerchantDetails(recordId));
+    }
+
+    public Result getData(int recordId,int limit,int offset){
+        Map map = new LinkedHashMap();
+        map.put("data",merchantDetailMapper.getMerchantDetails(recordId,limit,offset));
+        map.put("offset",offset);
+        map.put("limit",limit);
+        map.put("recordId",recordId);
+        return ResultUtil.resultGoodReturner(map);
     }
 
     public Result getDataSources() {

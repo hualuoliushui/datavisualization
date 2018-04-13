@@ -3,6 +3,11 @@ $(function () {
     var height = 525;
 
     var data_cache = {};
+    var data_cache_state = {
+        init:0
+        ,working:1
+        ,complete:2
+    }
 
     var chart_pie = null;
     var chart_china_map = null;
@@ -148,14 +153,18 @@ $(function () {
                 change(option.val(), checked, "year");
             }
         }
-        var _data = null;
+        var _data = d3.map();
         var _show_data = null;
         var _chord_show_data = null;
         this.set_data = function (data) {
             _data = data;
-        };
+        }
+        this.get_data = function () {
+            return _data;
+        }
         this.update_data = function () {
-            if (!_data) return;
+            if(!_data)
+                _data=d3.map();
             _show_data = [];
             _data.each(function (value, start_point) {
                 if (!china_flow_description["option_selected_values"]["start_point"].has(start_point))
@@ -336,10 +345,6 @@ $(function () {
         return createTime.substr(0, 4);
     }
 
-    function getDataUrl(record_id) {
-        return "/statistic/getData?recordId=" + record_id;
-    }
-
     var data_types_description_indexes = [1, 2]
 
     var data_types_description = {
@@ -417,16 +422,14 @@ $(function () {
     }
 
     function deal_area_num_data(data, data_type_obj) {
-        data_type_obj.area_arr = []
-        data_type_obj.area_map = {}
+        data_type_obj.area_arr=[];
         deal_data(data, data_type_obj.area_arr, data_type_obj.area_map,
             data_type_obj.area_key_value_des,
             data_type_obj.get_area_key);
     }
 
     function deal_time_num_data(data, data_type_obj) {
-        data_type_obj.time_arr = []
-        data_type_obj.time_map = {}
+        data_type_obj.time_arr=[];
         deal_data(data, data_type_obj.time_arr, data_type_obj.time_map,
             data_type_obj.time_key_value_des,
             data_type_obj.get_time_key);
@@ -467,46 +470,170 @@ $(function () {
         d3.select("#record").attr("disabled",null);
     }
 
-    function init_data(record_id) {
-        if (!record_id)
-            return;
-        disable_record_select();
-        deal_msg("数据加载中");
-        var url = getDataUrl(record_id);
-        if (data_cache.hasOwnProperty(url)){
-            work(data_cache[url]);
-            enable_record_select();
-            deal_msg("数据加载完毕");
-            return;
+    function make_sure_data_cache(recordId) {
+        if (!data_cache.hasOwnProperty(recordId)){
+            data_cache[recordId] = {
+                record_id:recordId
+                ,state:data_cache_state.init
+                ,total:0
+                ,limit:10
+                ,offset:0
+                ,data:[]
+            }
         }
+    }
+
+    function getNumOfDataUrl(recordId) {
+        make_sure_data_cache(recordId);
+        return "/statistic/getNumOfData?recordId=" + recordId;
+    }
+
+    function getDataUrl(recordId) {
+        make_sure_data_cache(recordId);
+        return "/statistic/getData?recordId=" + recordId + "" +
+            "&limit="+data_cache[recordId]["limit"] +"" +
+            "&offset="+data_cache[recordId]["offset"];
+    }
+
+    function get_data_cache_state(recordId) {
+        make_sure_data_cache(recordId);
+        return data_cache[recordId]["state"];
+    }
+
+    function update_data_cache_total(recordId,total) {
+        if(Number.isNaN(+total))
+            return false;
+        make_sure_data_cache(recordId);
+        data_cache[recordId]["total"]= +total;
+        return true;
+    }
+
+    function update_data_cache(recordId,data_detail) {
+        make_sure_data_cache(recordId);
+        if(data_cache[recordId]["offset"]==data_detail["offset"]){
+            data_cache[recordId]["data"]=data_cache[recordId]["data"].concat(data_detail["data"])
+            data_cache[recordId]["offset"]+=data_detail["limit"];
+            if(data_cache[recordId]["offset"]==data_cache[recordId]["total"])
+                update_data_cache_state(recordId,data_cache_state.complete);
+            return true;
+        }else
+            return false;
+    }
+
+    function update_data_cache_state(recordId, state) {
+        make_sure_data_cache(recordId);
+        data_cache[recordId]["state"]=state;
+    }
+
+    function init_data(recordId) {
+        if (!recordId)
+            return;
+        work(recordId);
+    }
+
+
+    function work(recordId) {
+        var state = get_data_cache_state(recordId);
+        console.log("recordId:"+recordId,state);
+        switch(state){
+            case data_cache_state.init:
+                request_data_init(recordId);
+                break;
+            case data_cache_state.working:
+                // setTimeout(request_data_working,2000,recordId);
+                request_data_working(recordId);
+                break;
+            case data_cache_state.complete:
+                request_data_complete(recordId);
+                break;
+            default:
+                break;
+        }
+    }
+
+    function empty_data() {
+        for(var i=0,len=data_types_description_indexes.length;i<len;i++){
+            data_types_description[data_types_description_indexes[i]].area_arr=[];
+            data_types_description[data_types_description_indexes[i]].area_map={};
+            data_types_description[data_types_description_indexes[i]].time_arr=[];
+            data_types_description[data_types_description_indexes[i]].time_map={};
+        }
+        china_flow_description["set_data"](d3.map());
+    }
+
+    function request_data_init(recordId) {
+        disable_record_select();
+        deal_msg("初始化数据加载");
+        empty_data();
+        var url = getNumOfDataUrl(recordId);
         request(url)
             .then(function (value) {
                 if (value.errCode != 0) {
                     deal_msg(value, 'result');
                     return;
                 }
-                data_cache[url] = value.data;
-                work(value.data);
-                enable_record_select();
-                deal_msg("数据加载完毕");
+                var total = +value.data
+                if(!update_data_cache_total(recordId,total)){
+                    deal_msg("初始化加载数据出错",'error');
+                    return;
+                }
+                update_data_cache_state(recordId,data_cache_state.working);
+                work(recordId);
             }, function (reason) {
                 deal_msg(reason, 'error');
             })
     }
 
+    function request_data_working(recordId) {
+        deal_msg("数据加载中");
+        var url = getDataUrl(recordId);
+        request(url)
+            .then(function (value) {
+                if (value.errCode != 0) {
+                    deal_msg(value, 'result');
+                    return;
+                }
+                console.log(value);
+                if(value["data"] && update_data_cache(recordId,value["data"])){
+                    work_with_data(recordId,value.data["data"]);
+                    work(recordId);
+                }
+            }, function (reason) {
+                deal_msg(reason, 'error');
+            })
+    }
 
-    function work(data) {
-        for (var i = 0, len = data_types_description_indexes.length; i < len; i++) {
-            deal_area_num_data(data[i], data_types_description[data_types_description_indexes[i]]);
-            deal_time_num_data(data[i], data_types_description[data_types_description_indexes[i]]);
+    function request_data_complete(recordId) {
+        enable_record_select();
+        deal_msg("数据加载完毕");
+    }
+
+    function work_with_data(recordId,data){
+        var merchant_detail = [];
+        var good_type_detail = [];
+        for(var i=0,len=data.length;i<len;i++){
+            good_type_detail=good_type_detail.concat(data[i]["goodTypeDetails"]);
         }
-        deal_merge_data(data);
+        merchant_detail=merchant_detail.concat(data);
+        var detail = [merchant_detail,good_type_detail];
+        for (var i = 0, len = data_types_description_indexes.length; i < len; i++) {
+            deal_area_num_data(detail[i], data_types_description[data_types_description_indexes[i]]);
+            deal_time_num_data(detail[i], data_types_description[data_types_description_indexes[i]]);
+        }
+        deal_All_data(recordId);
         draw(data_type);
         change_chart_show(chart_type);
     }
 
-    function deal_merge_data(data) {
-        var [merchants, goodTypes] = data;
+    function deal_All_data(recordId) {
+        make_sure_data_cache(recordId);
+        var data = data_cache[recordId]["data"];
+        var merchants = [];
+        var goodTypes = [];
+        for(var i=0,len=data.length;i<len;i++){
+            goodTypes=goodTypes.concat(data[i]["goodTypeDetails"]);
+        }
+        merchants=merchants.concat(data);
         var merchants_map = d3.map(merchants, function (d) {
             return d.merchantId;
         });
@@ -526,8 +653,8 @@ $(function () {
                 return d["typeName"]
             })
             .map(goodTypes, d3.map);
-        update_filter_select(temp_map);
         china_flow_description["set_data"](temp_map);
+        update_filter_select(temp_map);
         china_flow_description["update_data"]();
     }
 

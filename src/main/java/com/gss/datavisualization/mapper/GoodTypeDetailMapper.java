@@ -31,6 +31,17 @@ public interface GoodTypeDetailMapper {
     })
     List<GoodTypeDetail> getGoodTypeDetails(@Param("record_id")int record_id);
 
+    @Select("select * from " + tableName + " where record_id=#{record_id} and merchant_id=#{merchant_id} ")
+    @Results({
+            @Result(column = "record_id",property = "recordId"),
+            @Result(column = "good_type_id",property = "goodTypeId"),
+            @Result(property = "goodDetails", column = "{record_id=record_id,good_type_id=good_type_id}", many =
+            @Many(select = "com.gss.datavisualization.mapper.GoodDetailMapper.getGoodDetailsByType")
+            )
+    })
+    List<GoodTypeDetail> getGoodTypeDetailsByMerchant(@Param("record_id")int record_id,
+                                                      @Param("merchant_id")int merchant_id);
+
     @Delete("delete from " + tableName + " where record_id=#{record_id}")
     int deleteGoodTypeDetails(@Param("record_id")int record_id);
 }

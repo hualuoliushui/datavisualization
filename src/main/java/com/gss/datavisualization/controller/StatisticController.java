@@ -51,9 +51,16 @@ public class StatisticController {
         return statisticService.getGoodTypeDetails(recordId);
     }
 
+    @RequestMapping(value="/getNumOfData",method = RequestMethod.GET)
+    public Object getNumOfData(@RequestParam("recordId")int recordId){
+        return statisticService.getNumOfData(recordId);
+    }
+
     @RequestMapping(value = "/getData",method = RequestMethod.GET)
-    public Object getData(@RequestParam("recordId")int recordId){
-        return statisticService.getData(recordId);
+    public Object getData(@RequestParam("recordId")int recordId,
+                          @RequestParam(value = "limit",required = false,defaultValue = "2147483647")int limit,
+                          @RequestParam(value = "offset",required = false,defaultValue = "0")int offset){
+        return statisticService.getData(recordId,limit,offset);
     }
 
     @RequestMapping(value = "/getGoodDetails",method = RequestMethod.GET)

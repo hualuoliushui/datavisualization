@@ -20,9 +20,22 @@ public interface MerchantDetailMapper {
     @InsertProvider(type = MerchantDetailMapperProvider.class,method = "insertAll")
     int insertAll(@Param("list")Collection<com.gss.datavisualization.webservice.MerchantDetail> list,
                   @Param("record_id")int recode_id);
+    String sql_getMerchantDetails = " from " + tableName + " where record_id=#{record_id} ";
 
-    @Select("select * from " + tableName + " where record_id=#{record_id} ")
-    List<MerchantDetail> getMerchantDetails(@Param("record_id")int record_id);
+    @Select("select count(*) " + sql_getMerchantDetails)
+    int getTotal_getMerchantDetails(@Param("record_id")int record_id);
+
+    @Select("select * " + sql_getMerchantDetails + " limit #{limit} offset #{offset} ")
+    @Results({
+            @Result(column = "record_id",property = "recordId"),
+            @Result(column = "merchant_id",property = "merchantId"),
+            @Result(property = "goodTypeDetails", column = "{record_id=record_id,merchant_id=merchant_id}", many =
+            @Many(select = "com.gss.datavisualization.mapper.GoodTypeDetailMapper.getGoodTypeDetailsByMerchant")
+            )
+    })
+    List<MerchantDetail> getMerchantDetails(@Param("record_id")int record_id,
+                                            @Param("limit")int limit,
+                                            @Param("offset")int offset);
 
     @Delete("delete from " + tableName + " where record_id=#{record_id}")
     int deleteMerchantDetails(@Param("record_id")int record_id);

@@ -71,7 +71,7 @@ function ChartChord(svg) {
                 .style("fill", function(d) { return _color(d.index); })
                 .style("stroke", function(d) { return d3.rgb(_color(d.index)).darker(); })
                 .attr("d", function (d) {
-                    console.log("d",d);
+                    // console.log("d",d);
                     return _arc(d);
                 });
             d3.selectAll(".chord-group")
@@ -81,7 +81,7 @@ function ChartChord(svg) {
                 return function (g, i) {
                     d3.selectAll(".chord-ribbon")
                         .filter(function (d) {
-                            console.log(i,d.source.index,d.target.index);
+                            // console.log(i,d.source.index,d.target.index);
                             return d.source.index!=i&&d.target.index!=i;
                         })
                         .transition()
@@ -163,7 +163,7 @@ function ChartChord(svg) {
                     }
                 }
             }
-            console.log("temp",temp);
+            // console.log("temp",temp);
             return temp;
         }
     }
