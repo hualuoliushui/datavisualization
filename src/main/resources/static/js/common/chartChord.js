@@ -125,7 +125,7 @@ function ChartChord(svg) {
             for(var i=0,len=data.keys().length;i<len;i++){
                 var key = data.keys()[i];
                 var value = data.get(key);
-                temp[value["index"]]=value["value"];
+                temp[value["index"]]=value["value"].slice(0);//防止修改原数据
                 _node_names[value["index"]]=key;
             }
             var row_len=temp.length,col_len = row_len ? temp[0].length:0;
@@ -163,7 +163,7 @@ function ChartChord(svg) {
                     }
                 }
             }
-            // console.log("temp",temp);
+            console.log("temp",temp);
             return temp;
         }
     }

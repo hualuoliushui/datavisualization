@@ -375,23 +375,40 @@ $(function () {
             time_arr: [],
             time_map: {},
             get_area_key: function (goodTypeDetail) {
+                if(!goodTypeDetail) return;
                 if (!(goodTypeDetail instanceof Object)) return;
                 if (!goodTypeDetail["producePlace"]) return;
                 var sum = 0;
-                for (var i = 0, len = goodTypeDetail["goodDetails"].length; i < len; i++) {
-                    sum += Number(goodTypeDetail["goodDetails"][i]["goodNumber"])
+                if(goodTypeDetail["goodDetails"] instanceof Array){
+                    for (var i = 0, len = goodTypeDetail["goodDetails"].length; i < len; i++) {
+                        sum += Number(goodTypeDetail["goodDetails"][i]["goodNumber"])
+                    }
+                }else{
+                    goodTypeDetail["goodDetails"].each(function (value, key) {
+                        sum += Number(value["goodNumber"]);
+                    })
                 }
                 return [{key: getProvince(goodTypeDetail["producePlace"]), num: sum}];
             },
             area_key_value_des: null,
             get_time_key: function (goodDetails) {
-                if (!(goodDetails instanceof Array)) return null;
+                if(!goodDetails) return;
                 var keys = [];
-                for (var i = 0, len = goodDetails.length; i < len; i++) {
-                    keys.push({
-                        key: getCreateYear(goodDetails[i]["produceDate"]),
-                        num: Number(goodDetails[i]["goodNumber"])
-                    });
+                if (goodDetails instanceof Array) {
+                    for (var i = 0, len = goodDetails.length; i < len; i++) {
+                        keys.push({
+                            key: getCreateYear(goodDetails[i]["produceDate"]),
+                            num: Number(goodDetails[i]["goodNumber"])
+                        });
+                    }
+                }else{
+                    goodDetails.each(function (value, key) {
+                        console.log("get_time_key",value,key);
+                        keys.push({
+                            key: getCreateYear(value["produceDate"]),
+                            num: Number(value["goodNumber"])
+                        })
+                    })
                 }
                 return keys;
             },
@@ -541,6 +558,13 @@ $(function () {
     function work(recordId) {
         var [state,nextState] = get_data_cache_state(recordId);
         console.log("recordId:"+recordId,state,nextState);
+        if(state==nextState && state==data_cache_state.complete){
+            deal_msg("更新视图数据中");
+            empty_data();
+            work_with_data(recordId,data_cache[recordId]["data"]);
+            deal_msg("更新视图数据完毕");
+            return;
+        }
         switch(nextState){
             case data_cache_state.init:
                 request_data_init(recordId);
@@ -611,7 +635,7 @@ $(function () {
     }
 
     function request_data_complete(recordId) {
-        update_data_cache_state(recordId,data_cache_state.init);
+        update_data_cache_state(recordId,data_cache_state.complete);
         enable_record_select();
         deal_msg("数据加载完毕");
     }
