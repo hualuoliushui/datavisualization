@@ -471,10 +471,11 @@ $(function () {
     }
 
     function make_sure_data_cache(recordId) {
-        if (!data_cache.hasOwnProperty(recordId)){
+        if (!data_cache.hasOwnProperty(recordId) || !data_cache[recordId]){
             data_cache[recordId] = {
                 record_id:recordId
                 ,state:data_cache_state.init
+                ,nextState:data_cache_state.init
                 ,total:0
                 ,limit:10
                 ,offset:0
@@ -497,7 +498,7 @@ $(function () {
 
     function get_data_cache_state(recordId) {
         make_sure_data_cache(recordId);
-        return data_cache[recordId]["state"];
+        return [data_cache[recordId]["state"],data_cache[recordId]["nextState"]];
     }
 
     function update_data_cache_total(recordId,total) {
@@ -520,9 +521,14 @@ $(function () {
             return false;
     }
 
-    function update_data_cache_state(recordId, state) {
+    function update_data_cache_state(recordId, next_state) {
         make_sure_data_cache(recordId);
-        data_cache[recordId]["state"]=state;
+        if(next_state==data_cache_state.init){
+            data_cache[recordId]=null;
+            make_sure_data_cache(recordId);
+        }
+        data_cache[recordId]["state"]=data_cache[recordId]["nextState"];
+        data_cache[recordId]["nextState"]=next_state;
     }
 
     function init_data(recordId) {
@@ -533,9 +539,9 @@ $(function () {
 
 
     function work(recordId) {
-        var state = get_data_cache_state(recordId);
-        console.log("recordId:"+recordId,state);
-        switch(state){
+        var [state,nextState] = get_data_cache_state(recordId);
+        console.log("recordId:"+recordId,state,nextState);
+        switch(nextState){
             case data_cache_state.init:
                 request_data_init(recordId);
                 break;
@@ -594,6 +600,7 @@ $(function () {
                     return;
                 }
                 console.log(value);
+                update_data_cache_state(recordId,data_cache_state.working);
                 if(value["data"] && update_data_cache(recordId,value["data"])){
                     work_with_data(recordId,value.data["data"]);
                     work(recordId);
@@ -604,6 +611,7 @@ $(function () {
     }
 
     function request_data_complete(recordId) {
+        update_data_cache_state(recordId,data_cache_state.init);
         enable_record_select();
         deal_msg("数据加载完毕");
     }
