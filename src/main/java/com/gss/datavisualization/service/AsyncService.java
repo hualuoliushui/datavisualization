@@ -1,6 +1,7 @@
 package com.gss.datavisualization.service;
 
 import com.gss.datavisualization.entity.Result;
+import com.gss.datavisualization.enums.RecordState;
 import com.gss.datavisualization.enums.ResultState;
 import com.gss.datavisualization.mapper.*;
 import com.gss.datavisualization.model.DataSource;
@@ -99,6 +100,7 @@ public class AsyncService {
             GetGoodDetailListResponse getGoodDetailListResponse = wsClient.getGoodDetailListResponse();
             if(getGoodDetailListResponse!=null)
                 dealGoodTypeDetailList(getGoodDetailListResponse.getGoodTypeDetails());
+            recordMapper.updateDeleted(record.getId(), RecordState.COLLECTED);
         }
         catch (Exception e)
         {

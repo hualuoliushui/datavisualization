@@ -2,6 +2,7 @@ package com.gss.datavisualization.service;
 
 import com.gss.datavisualization.entity.Result;
 import com.gss.datavisualization.enums.EntryState;
+import com.gss.datavisualization.enums.ResultState;
 import com.gss.datavisualization.mapper.*;
 import com.gss.datavisualization.model.DataSource;
 import com.gss.datavisualization.returnentity.RecordWithDataSource;
@@ -39,6 +40,15 @@ public class StatisticService {
             recordWithDataSources = recordMapper.getRecordsWithDataSourceByDataSourceId(data_source_id);
         else
             recordWithDataSources = recordMapper.getRecordsWithDataSourceByRecordId(record_id);
+        return ResultUtil.resultGoodReturner(recordWithDataSources);
+    }
+
+    public Result getRecordsOnlySuccess(int data_source_id,int record_id){
+        List<RecordWithDataSource> recordWithDataSources = (List<RecordWithDataSource>)getRecords(data_source_id,record_id).getData();
+        for(int i=recordWithDataSources.size()-1;i>=0;i--){
+            if(recordWithDataSources.get(i).getResult()!= ResultState.SUCCESS)
+                recordWithDataSources.remove(i);
+        }
         return ResultUtil.resultGoodReturner(recordWithDataSources);
     }
 

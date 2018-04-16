@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @create 2018-03-14 16:03
@@ -27,14 +29,14 @@ public class DataCollectionService {
     AsyncService asyncService;
     @Autowired
     StatisticService statisticService;
-    private static Set<Integer> isCollecting = new HashSet<>();
+    private static Map<Integer,Integer> isCollecting = new ConcurrentHashMap<>();
 
     boolean isCollecting(int dataSourceId){
-        return isCollecting.contains(dataSourceId);
+        return isCollecting.get(dataSourceId)!=null;
     }
 
     static void setIsCollecting(int dataSourceId){
-        isCollecting.add(dataSourceId);
+        isCollecting.put(dataSourceId,-1);
     }
 
     static void resetIsCollecting(int dataSourceId){
@@ -42,7 +44,6 @@ public class DataCollectionService {
     }
 
     public Result startCollecting(int dataSourceId ){
-
         if(isCollecting(dataSourceId))
             return ResultUtil.resultBadReturner("上一个统计未结束，请稍后再试");
         asyncService.collecting(dataSourceId);

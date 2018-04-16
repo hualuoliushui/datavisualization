@@ -23,7 +23,7 @@ public class IndexController {
     public Object index(Map<String,Object> map,
                         @RequestParam(value = "data_source_id",required = false,defaultValue = "0")int data_source_id,
                         @RequestParam(value = "record_id",required = false,defaultValue = "0")int record_id){
-        map.put("records",statisticService.getRecords(data_source_id,record_id).getData());
+        map.put("records",statisticService.getRecordsOnlySuccess(data_source_id,record_id).getData());
         return "index";
     }
 

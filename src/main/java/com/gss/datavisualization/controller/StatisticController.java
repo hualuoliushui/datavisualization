@@ -13,6 +13,7 @@ import sun.misc.Request;
  **/
 @RestController
 @RequestMapping(value = "/statistic")
+@CrossOrigin
 public class StatisticController {
     @Autowired
     StatisticService statisticService;
@@ -40,6 +41,13 @@ public class StatisticController {
                              @RequestParam(value = "recordId",required = false,defaultValue = "0")int recordId){
         return statisticService.getRecords(dataSourceId, recordId);
     }
+
+    @RequestMapping(value = "/getRecordsOnlySuccess",method = RequestMethod.GET)
+    public Object getRecordsOnlySuccess(@RequestParam(value = "dataSourceId",required = false,defaultValue = "0")int dataSourceId,
+                             @RequestParam(value = "recordId",required = false,defaultValue = "0")int recordId){
+        return statisticService.getRecordsOnlySuccess(dataSourceId, recordId);
+    }
+
 
     @RequestMapping(value = "/getMerchantDetails",method = RequestMethod.GET)
     public Object getMerchantDetails(@RequestParam("recordId")int recordId){

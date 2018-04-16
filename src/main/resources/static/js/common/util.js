@@ -6,6 +6,7 @@
     'use strict';
     String.prototype.format = function(){
         var args = arguments;
+        // console.log("args",args);
         return this.replace(/\{(\d+)\}/g,
             function(m,i){
                 return args[i];

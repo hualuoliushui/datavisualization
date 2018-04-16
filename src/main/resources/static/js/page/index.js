@@ -13,6 +13,7 @@ $(function () {
     var chart_china_map = null;
     var chart_line = null;
     var chart_chord = null;
+    var chart_tree = null;
 
     var record_id = 0;
     var data_type = 0;
@@ -63,9 +64,10 @@ $(function () {
     , {value:2,text:"饼图",group:d3.set([1,2])}
     , {value:3,text:"折线图",group:d3.set([1,2])}
     , {value:4,text:"弦图",group:d3.set([3])}
+    // , {value:5,text:"树状图",group:d3.set([3])} // 不好显示，暂时不用
     ];
 
-    var china_flow_description = new (function () {
+    var chart_with_mutil_select_description = new (function () {
         var _this = this;
         this.multi_select_options = {
             good_type: [],
@@ -80,21 +82,22 @@ $(function () {
             year: d3.set()
         };
 
-        function update_china_flow_chart() {
-            china_flow_description["update_data"]();
+        function update_charts() {
+            chart_with_mutil_select_description["update_data"]();
             draw_china_flow();
             draw_chord();
+            draw_tree();
         }
 
         function select_all(type) {
 
             _this["option_selected_values"][type] = d3.set(_this["multi_select_options"][type]);
-            update_china_flow_chart()
+            update_charts()
         }
 
         function deselect_all(type) {
             _this["option_selected_values"][type] = d3.set();
-            update_china_flow_chart()
+            update_charts()
         }
 
         this.on_select_all = {
@@ -132,7 +135,7 @@ $(function () {
             } else {
                 _this["option_selected_values"][type].remove(option_val);
             }
-            update_china_flow_chart()
+            update_charts()
         }
 
         this.on_change = {
@@ -156,6 +159,7 @@ $(function () {
         var _data = d3.map();
         var _show_data = null;
         var _chord_show_data = null;
+        var _tree_show_data = null;
         this.set_data = function (data) {
             _data = data;
         }
@@ -167,40 +171,35 @@ $(function () {
                 _data=d3.map();
             _show_data = [];
             _data.each(function (value, start_point) {
-                if (!china_flow_description["option_selected_values"]["start_point"].has(start_point))
+                if (!check_options_has_key("start_point",start_point))
                     return;
                 value.each(function (value, end_point) {
-                    if (!china_flow_description["option_selected_values"]["end_point"].has(end_point))
+                    if (!check_options_has_key("end_point",end_point))
                         return;
                     let goodType_year_num = {};
                     let sum = 0;
-                    let temp = 0;
                     value.each(function (value, good_type) {
-                        if (!china_flow_description["option_selected_values"]["good_type"].has(good_type))
+                        if (!check_options_has_key("good_type",good_type))
                             return;
                         let year_num_map = d3.map();
-                        if (value && value.length) {
-                            for (let i = 0, len = value.length; i < len; i++) {
-                                value[i]["goodDetails"].each(function (value, year) {
-                                    if (!china_flow_description["option_selected_values"]["year"].has(year))
-                                        return;
-                                    temp = Number(value["goodNumber"]);
-                                    if (isNaN(temp)) return;
-                                    if (year_num_map.has(year))
-                                        year_num_map.set(year, year_num_map.get(year) + temp)
-                                    else
-                                        year_num_map.set(year, temp);
-                                    sum += temp;
-                                })
+                        value.each(function (value, year) {
+                            for(let i=0,ilen=value.length;i<ilen;i++){
+                                let temp = +value[i]["num"];
+                                if (Number.isNaN(temp)) continue;
+                                if (year_num_map.has(year))
+                                    year_num_map.set(year, year_num_map.get(year) + temp)
+                                else
+                                    year_num_map.set(year, temp);
+                                sum += temp;
                             }
-                        }
+                        })
                         var year_num = [];
                         year_num_map.each(function (value, key) {
                             year_num.push([key, value]);
                         })
                         if (year_num.length) {
                             year_num.sort(function (a, b) {
-                                return Number(a[0]) > Number(b[0]);
+                                return (+a[0]) > (+b[0]);
                             })
                             goodType_year_num[good_type] = year_num;
                         }
@@ -209,7 +208,11 @@ $(function () {
                         _show_data.push([[start_point, end_point], goodType_year_num, sum]);
                 });
             })
-            _this.update_chord_data(_show_data);
+            _this["update_chord_data"](_show_data);
+            _this["update_tree_data"]();
+            function check_options_has_key(type,key) {
+                return chart_with_mutil_select_description["option_selected_values"][type].has(key);
+            }
         }
         this.update_chord_data = function (show_data) {
             if(!show_data && !provinces_coordinates) return;
@@ -228,11 +231,99 @@ $(function () {
             }
             _chord_show_data = temp;
         }
+        this.update_tree_data = function () {
+            if(!chart_tree)
+                return;
+            if(!_data)
+                _data=d3.map();
+            _tree_show_data = {};
+            let root_sum = 0;
+            let start_point_children = [];
+            _data.each(function (value, start_point) {
+                if (!check_options_has_key("start_point",start_point))
+                    return;
+                let start_point_map = {};
+                let start_point_sum = 0;
+                let end_point_children = [];
+                value.each(function (value, end_point) {
+                    if (!check_options_has_key("end_point",end_point))
+                        return;
+                    let end_point_map = {};
+                    let end_point_sum = 0;
+                    let good_type_children = [];
+                    value.each(function (value, good_type) {
+                        if (!check_options_has_key("good_type",good_type))
+                            return;
+                        let good_type_map = {};
+                        let good_type_sum = 0;
+                        let year_children = [];
+
+                        value.each(function (value, year) {
+                            if (!check_options_has_key("year",year))
+                                return;
+                            let year_map = {};
+                            let year_sum = 0;
+                            for(let i=0,ilen=value.length;i<ilen;i++){
+                                let temp = +value[i]["num"];
+                                if (Number.isNaN(temp)) continue;
+                                year_sum += temp;
+                            }
+                            year_sum && (
+                                setName(year_map,getName(year+"年",year_sum))
+                                    ,setNum(year_map,year_sum)
+                                    ,year_children.push(year_map)
+                                    ,(good_type_sum+=year_sum)
+                            );
+                        })
+                        good_type_sum && (
+                            setName(good_type_map,getName(good_type,good_type_sum))
+                                ,setChildren(good_type_map,year_children)
+                                ,good_type_children.push(good_type_map)
+                                ,(end_point_sum+=good_type_sum)
+                        );
+                    })
+                    end_point_sum && (
+                        setName(end_point_map,getName(end_point,end_point_sum))
+                            ,setChildren(end_point_map,good_type_children)
+                            ,end_point_children.push(end_point_map)
+                            ,(start_point_sum+=end_point_sum)
+                    );
+                });
+                start_point_sum && (
+                    setName(start_point_map,getName(start_point,start_point_sum))
+                        ,setChildren(start_point_map,end_point_children)
+                        ,start_point_children.push(start_point_map)
+                        ,(root_sum+=start_point_sum)
+                );
+            })
+            root_sum && (
+                setName(_tree_show_data,getName("中国",root_sum))
+                    ,setChildren(_tree_show_data,start_point_children)
+            );
+            function check_options_has_key(type,key) {
+                return chart_with_mutil_select_description["option_selected_values"][type].has(key);
+            }
+            function getName(name,num) {
+                return name +"("+ (num)+")份";
+            }
+            function setName(map, name) {
+                map["name"]=name;
+            }
+            function setChildren(map,array) {
+                map["children"]=array;
+            }
+            function setNum(map, value) {
+                map["num"]=value;
+            }
+        }
         this.get_show_data = function () {
             return _show_data;
         }
         this.get_chord_show_data = function () {
             return _chord_show_data;
+        }
+        this.get_tree_show_data = function () {
+            return _tree_show_data;
         }
     })();
 
@@ -250,14 +341,14 @@ $(function () {
             , selectAllValue: 0
             // , numberDisplayed:1
             , maxHeight: 200
-            , onChange: china_flow_description["on_change"][type]
-            , onSelectAll: china_flow_description["on_select_all"][type]
-            , onDeselectAll: china_flow_description["on_deselect_all"][type]
+            , onChange: chart_with_mutil_select_description["on_change"][type]
+            , onSelectAll: chart_with_mutil_select_description["on_select_all"][type]
+            , onDeselectAll: chart_with_mutil_select_description["on_deselect_all"][type]
             // , inheritClass:true
         })
         ele.multiselect('selectAll', false);
         ele.multiselect('updateButtonText', false)
-        china_flow_description["on_select_all"][type]();
+        chart_with_mutil_select_description["on_select_all"][type]();
     }
 
     function init_filter_select() {
@@ -285,7 +376,7 @@ $(function () {
                 var value = temp[i];
                 ele.append($('<option></option>').text(value).val(value));
             }
-            china_flow_description["multi_select_options"][type] = temp;
+            chart_with_mutil_select_description["multi_select_options"][type] = temp;
             init_multi_select(ele.multiselect("destroy"), str, type);
         }
 
@@ -294,20 +385,15 @@ $(function () {
             end_point_set = d3.set(),
             year_set = d3.set();
 
-        data.each(function (value, key) {
-            start_point_set.add(key);
-            value.each(function (value, key) {
-                end_point_set.add(key);
-                value.each(function (value, key) {
-                    good_type_set.add(key);
-                    if (value) {
-                        for (var i = 0, len = value.length; i < len; i++) {
-                            value[i]["goodDetails"].each(function (value, key) {
-                                year_set.add(key);
-                            })
-                        }
-
-                    }
+        data.each(function (value, start_point) {
+            start_point_set.add(start_point);
+            value.each(function (value, end_point) {
+                end_point_set.add(end_point);
+                value.each(function (value, good_type) {
+                    good_type_set.add(good_type);
+                    value.each(function (value, year) {
+                        year_set.add(year);
+                    })
                 })
             })
         })
@@ -325,9 +411,11 @@ $(function () {
             .attr("height", height), width, height);
         chart_line = new ChartLine(d3.select("#chartLine").append("svg").attr("width", width)
             .attr("height", height), width, height);
-        chart_chord = new ChartChord(d3.select("#chartChord").append("svg").attr("width",width)
-            .attr("height",height));
+        chart_chord = new ChartChord(d3.select("#chartChord").append("svg").attr("width",width*1.25)
+            .attr("height",height*1.5));
         chart_china_map.init(china_json);
+        // chart_tree = new ChartTree(d3.select("#chartTree").append("svg").attr("width",width)
+        //     .attr("height",height*2),width,height*2);
     }
 
     function getProvince(companyArea) {
@@ -364,7 +452,8 @@ $(function () {
                 return [{key: getCreateYear(createDate), num: 1}];
             },
             time_key_value_des: "createDate",
-            chart_line_tip: "{0}年商户注册量: {1}",
+            chart_line_tip: "{0}年商户注册量: {1}人",
+            chart_china_map_tip : "{0}<br>{1}人",
             chart_line_title: {xAxis: "年份", yAxis: "当年注册商户人数"},
             sub_title: "商户数量-地域-时间分布"
         },
@@ -403,7 +492,7 @@ $(function () {
                     }
                 }else{
                     goodDetails.each(function (value, key) {
-                        console.log("get_time_key",value,key);
+                        // console.log("get_time_key",value,key);
                         keys.push({
                             key: getCreateYear(value["produceDate"]),
                             num: Number(value["goodNumber"])
@@ -413,7 +502,8 @@ $(function () {
                 return keys;
             },
             time_key_value_des: "goodDetails",
-            chart_line_tip: "{0}年商品生产数量:{1}",
+            chart_line_tip: "{0}年商品生产数量:{1}份",
+            chart_china_map_tip: "{0}<br>{1}份",
             chart_line_title: {xAxis: "年份", yAxis: "当年生产商品数"},
             sub_title: "商品数量-地域-时间分布"
         }
@@ -459,17 +549,25 @@ $(function () {
 
     function draw_china_flow() {
         if (!chart_china_map) return;
-        chart_china_map.draw(china_flow_description["get_show_data"](), null, "<h4>生产地:</h4>{0}<br/><h4>销售地：</h4>{1}<br/><h4>商品：</h4>{2}", "flow")
+        chart_china_map.draw(chart_with_mutil_select_description["get_show_data"](), null,
+            "{0}->{1}<br/>商品：{2}", "flow")
     }
     
     function draw_chord() {
         if(!chart_chord) return;
-        chart_chord.draw(china_flow_description["get_chord_show_data"]())
+        chart_chord.draw(chart_with_mutil_select_description["get_chord_show_data"](),
+            "{0}->{1}<br/>商品数量:{2}份({3}%)")
+    }
+
+    function draw_tree() {
+        if(!chart_tree) return;
+        chart_tree.draw(chart_with_mutil_select_description["get_tree_show_data"]())
     }
 
     function draw_china(data_type) {
         chart_china_map.draw(data_types_description[data_type].area_arr,
-            data_types_description[data_type].area_map, "{0} <br/> {1}");
+            data_types_description[data_type].area_map,
+            data_types_description[data_type].chart_china_map_tip);
     }
 
     function draw_line(data_type) {
@@ -588,7 +686,7 @@ $(function () {
             data_types_description[data_types_description_indexes[i]].time_arr=[];
             data_types_description[data_types_description_indexes[i]].time_map={};
         }
-        china_flow_description["set_data"](d3.map());
+        chart_with_mutil_select_description["set_data"](d3.map());
     }
 
     function request_data_init(recordId) {
@@ -623,7 +721,7 @@ $(function () {
                     deal_msg(value, 'result');
                     return;
                 }
-                console.log(value);
+                // console.log(value);
                 update_data_cache_state(recordId,data_cache_state.working);
                 if(value["data"] && update_data_cache(recordId,value["data"])){
                     work_with_data(recordId,value.data["data"]);
@@ -660,6 +758,7 @@ $(function () {
     function deal_All_data(recordId) {
         make_sure_data_cache(recordId);
         var data = data_cache[recordId]["data"];
+        var temp = [];
         var merchants = [];
         var goodTypes = [];
         for(var i=0,len=data.length;i<len;i++){
@@ -670,24 +769,36 @@ $(function () {
             return d.merchantId;
         });
         for (var i = 0, len = goodTypes.length; i < len; i++) {
-            goodTypes[i]["goodDetails"] = d3.map(goodTypes[i]["goodDetails"], function (d) {
-                return getCreateYear(d["produceDate"]);
-            });
+            var goodTypeDetail = goodTypes[i];
+            for(var j=0,jlen=goodTypeDetail["goodDetails"].length;j<jlen;j++){
+                var goodDetail = goodTypeDetail["goodDetails"][j];
+                temp.push(
+                    {
+                        typeName:goodTypeDetail["typeName"]
+                        ,producePlace:getProvince(goodTypeDetail["producePlace"])
+                        ,salePlace:getProvince(merchants_map.get(goodTypeDetail["merchantId"])["companyArea"])
+                        ,produceDate:getCreateYear(goodDetail["produceDate"])
+                        ,num:goodDetail["goodNumber"]
+                })
+            }
         }
         var temp_map = d3.nest()
             .key(function (d) {
-                return getProvince(d["producePlace"]);
+                return d["producePlace"];
             })
             .key(function (d) {
-                return getProvince(merchants_map.get(d["merchantId"])["companyArea"]);
+                return d["salePlace"];
             })
             .key(function (d) {
-                return d["typeName"]
+                return d["typeName"];
             })
-            .map(goodTypes, d3.map);
-        china_flow_description["set_data"](temp_map);
+            .key(function (d) {
+                return d["produceDate"];
+            })
+            .map(temp, d3.map);
+        chart_with_mutil_select_description["set_data"](temp_map);
         update_filter_select(temp_map);
-        china_flow_description["update_data"]();
+        chart_with_mutil_select_description["update_data"]();
     }
 
     function show_filter_select() {
@@ -729,6 +840,7 @@ $(function () {
         chart_pie.hide();
         chart_line.hide();
         chart_chord.hide();
+        chart_tree && chart_tree.hide();
         switch (type) {
             case 1:
                 chart_china_map.show();
@@ -742,6 +854,9 @@ $(function () {
             case 4:
                 chart_chord.show();
                 break;
+            case 5:
+                chart_tree && chart_tree.show();
+                break;
             default:
                 break;
         }
@@ -750,6 +865,9 @@ $(function () {
     function set_sub_title(data_type, str) {
         if (!data_type)
             return;
+        if(data_type>=3){
+            return;
+        }
         $("#sub-title").text(str || data_types_description[data_type].sub_title)
     }
 
@@ -815,6 +933,12 @@ $(function () {
                 break;
             case 3:
                 svg = chart_line.svg();
+                break;
+            case 4:
+                svg = chart_chord.svg();
+                break;
+            case 5:
+                svg = chart_tree.svg();
                 break;
             default:
                 break;

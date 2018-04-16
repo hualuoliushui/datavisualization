@@ -153,6 +153,15 @@ function PIE(svg,width,height,valueOf,lineTextValueOf,need_lineText) {
                 return color(i);
             })
             .attr("d",function (d) {
+                d["_endAngle"]=d["endAngle"];
+                d["endAngle"]=d["startAngle"]+0.1;
+                // console.log(d);
+                return arc(d);
+            })
+            .transition()
+            .duration(1000)
+            .attr("d",function (d) {
+                d["endAngle"]=d["_endAngle"];
                 return arc(d);
             })
 

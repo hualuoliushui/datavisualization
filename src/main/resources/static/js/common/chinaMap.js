@@ -14,7 +14,8 @@ function ChinaMap(svg,width,height){
                 .style("top",(event.pageY + 20) + "px");
         }
         this.mouse_out = function (event, value, index) {
-            this._toolTip.style("opacity",0.0);
+            this._toolTip
+                .style("opacity",0.0);
         }
 
         this.get_ele = function () {
@@ -323,6 +324,9 @@ function ChinaMap(svg,width,height){
                                 })
                                 .transition()
                                 .duration(duration_time)
+                                .on("interrupt",function (d) {
+                                    // console.log("enter","interrupt");
+                                })
                         }
                         ele
                             .attr("stroke",origin_properties["stroke"])
@@ -376,13 +380,18 @@ function ChinaMap(svg,width,height){
                                 });
 
                             })
-                            .remove();
+                            .on("end",function (d) {
+                                d3.select(this).remove();
+                            })
                     }else{
                         ele
                             .attr("stroke",'red')
                             .attr("stroke-width", 3)
                             .transition()
                             .duration(duration_time)
+                            .on("interrupt",function (d) {
+                                // console.log("exit","interrupt");
+                            })
                             .attr("x1",function (d) {
                                 var start_coord = provinces_coordinates[d[0][0]];
                                 return projection(start_coord)[0];
@@ -399,7 +408,9 @@ function ChinaMap(svg,width,height){
                                 var end_coord = provinces_coordinates[d[0][0]];
                                 return projection(end_coord)[1];
                             })
-                            .remove();
+                            .on("end",function (d) {
+                                d3.select(this).remove();
+                            })
                     }
 
                 }
@@ -437,10 +448,10 @@ function ChinaMap(svg,width,height){
     }
 
     this.init_tip_color_rect = function () {
-        var colorRect_x = 20;
-        var colorRect_y = 450;
         var colorRect_width = 140;
         var colorRect_height = 30;
+        var colorRect_x = width/8;
+        var colorRect_y = height-colorRect_height-10;
         var defs = _svg.append("defs");
         _linearGradient = defs.append("linearGradient")
             .attr("id","linearColor")
@@ -458,8 +469,8 @@ function ChinaMap(svg,width,height){
             .attr("id","colorRect")
             .attr("x",colorRect_x)
             .attr("y",colorRect_y)
-            .attr("width",140)
-            .attr("height",30)
+            .attr("width",colorRect_width)
+            .attr("height",colorRect_height)
             .attr("display","none")
             .style("fill","url(#"+_linearGradient.attr("id")+")");
         _minValueText = _svg.append("text")
@@ -503,7 +514,7 @@ function ChinaMap(svg,width,height){
                 return d3.select(this).html() + xmlDocument.getElementsByTagName("g")[0].outerHTML;
             })
             d3.select("#southsea")
-                .attr("transform","translate(640,410)scale(0.5)")
+                .attr("transform","translate("+(width*3/4)+","+(height*4/5)+")scale(0.5)")
                 .attr("class","south-china-sea");
         });
     }

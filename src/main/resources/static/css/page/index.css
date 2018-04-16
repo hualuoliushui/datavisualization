@@ -92,7 +92,7 @@ body {
     font-family: simsun;
     font-size:14px;
     text-align:center;
-    color:white;
+    color:#35dc43;
     background-color:black;
     border-width:2px solid black;
     border-radius: 5px;
@@ -173,6 +173,10 @@ body {
     fill:red;
 }
 
+.focusText{
+    fill:#1378c7;
+}
+
 .data-line{
     stroke:black;
     stroke-width: 2;
@@ -207,4 +211,10 @@ li.multi-select-selected a label {
 
 .ribbons {
     fill-opacity: 0.67;
+}
+
+.bgi{
+    background-repeat: no-repeat;
+    background-size:100% 100%;
+    background-attachment: fixed;
 }

@@ -178,6 +178,7 @@ function ChartLine(svg,width,height){
         _focusCirle.append("circle")
             .attr("r",4.5)
         _focusCirle.append("text")
+            .classed("focusText",true)
             .attr("dx",10)
             .attr("dy","1em")
         // 对齐线的元素

@@ -11,7 +11,9 @@
     <link href="/js/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet"/>
     <link href="/css/page/index.css" rel="stylesheet"/>
 </head>
-<body>
+<body class="bgi"
+      <#--background="/image/bgi.jpg"-->
+>
 <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">数据展示平台</a>
     <div class="form-control form-control-dark w-100" style="background:#000">
@@ -94,6 +96,7 @@
                     <div class="col-md-12" id="pie"></div>
                     <div class="col-md-12" id="chartLine"></div>
                     <div class="col-md-12" id="chartChord"></div>
+                    <#--<div class="col-md-12" id="chartTree"></div>-->
                 </div>
             </div>
         </main>
@@ -116,6 +119,7 @@
 <script src="/js/common/chinaMap.js"></script>
 <script src="/js/common/chartLine.js"></script>
 <script src="/js/common/chartChord.js"></script>
+<script src="/js/common/chartTree.js"></script>
 
 <script src="/js/page/index.js"></script>
 </body>
