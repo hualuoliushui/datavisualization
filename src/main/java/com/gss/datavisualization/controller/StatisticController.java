@@ -3,6 +3,7 @@ package com.gss.datavisualization.controller;
 import com.gss.datavisualization.model.DataSource;
 import com.gss.datavisualization.service.DataCollectionService;
 import com.gss.datavisualization.service.StatisticService;
+import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sun.misc.Request;
@@ -61,6 +62,7 @@ public class StatisticController {
 
     @RequestMapping(value="/getNumOfData",method = RequestMethod.GET)
     public Object getNumOfData(@RequestParam("recordId")int recordId){
+//        return ResultUtil.resultGoodReturner(10);
         return statisticService.getNumOfData(recordId);
     }
 

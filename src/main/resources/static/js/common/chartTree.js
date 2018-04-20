@@ -10,7 +10,7 @@ function ChartTree(svg,width,height) {
     ;
 
     this.init = function (width,height) {
-        _layout = d3.tree()
+        _layout = d3.cluster()
             .size([width, height])
         _main_g = _svg.append("g")
             .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
@@ -37,7 +37,7 @@ function ChartTree(svg,width,height) {
         function default_exit_node(ele) {
             ele.transition()
                 .duration(_duration_time)
-                .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+                .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
                 .remove();
             // ele.select("circle")
             //     .attr("r", 1e-6);

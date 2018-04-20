@@ -158,8 +158,9 @@ function ChartChord(svg) {
                             return formatStr.format(
                                 _node_names[sourceIndex],_node_names[targetIndex]
                                 ,value
-                                ,(value*100).toFixed(1)
+                                ,(value/_data_value_sum*100).toFixed(1)
                             );
+                            
                         }
                         _tool_tip.set_html(getHtmlStr(g.source.index,g.target.index)+"<br/>" +
                             "" + (g.source.index==g.target.index ? "" :getHtmlStr(g.target.index,g.source.index)));
@@ -242,7 +243,7 @@ function ChartChord(svg) {
                     _data_value_sum+= +temp[i][j];
                 }
             }
-            // console.log("temp",temp);
+            console.log("_data_value_sum",_data_value_sum);
             return temp;
         }
     }

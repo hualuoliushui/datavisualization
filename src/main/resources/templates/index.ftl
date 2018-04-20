@@ -96,7 +96,7 @@
                     <div class="col-md-12" id="pie"></div>
                     <div class="col-md-12" id="chartLine"></div>
                     <div class="col-md-12" id="chartChord"></div>
-                    <#--<div class="col-md-12" id="chartTree"></div>-->
+                    <div class="col-md-12" id="chartTree"></div>
                 </div>
             </div>
         </main>
