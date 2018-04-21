@@ -34,7 +34,10 @@ function ChartChord(svg) {
     var _svg = svg,
         width = +_svg.attr("width"),
         height = +_svg.attr("height"),
-        outerRadius = Math.min(width,height)*0.35,
+        _margin = {left:30,right:30,top:30,bottom:30},
+        _width = width-_margin.left-_margin.right,
+        _height = height-_margin.top-_margin.bottom,
+        outerRadius = Math.min(_width,_height)*0.35,
         innerRadius= outerRadius-30,
         _data_value_sum = 0;
         _main_g = null,
@@ -243,7 +246,6 @@ function ChartChord(svg) {
                     _data_value_sum+= +temp[i][j];
                 }
             }
-            console.log("_data_value_sum",_data_value_sum);
             return temp;
         }
     }

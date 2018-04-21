@@ -174,7 +174,7 @@ body {
 }
 
 .focusText{
-    fill:#1378c7;
+    fill: #c70008;
 }
 
 .data-line{
@@ -217,4 +217,9 @@ li.multi-select-selected a label {
     background-repeat: no-repeat;
     background-size:100% 100%;
     background-attachment: fixed;
+}
+
+.area {
+    fill: steelblue;
+    clip-path: url(#clip);
 }

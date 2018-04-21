@@ -30,15 +30,15 @@ public class GoodDetailMapperProvider {
         for (int i = 0; i < goodDetails.size(); i++) {
             sb.append("(")
                     .append("#{record_id},")
-                    .append(mf.format(new Object[]{i,"goodId"})+",")
-                    .append(mf.format(new Object[]{i,"goodTypeId"})+",")
-                    .append(mf.format(new Object[]{i,"goodBatch"})+",")
-                    .append(mf.format(new Object[]{i,"goodCode"})+",")
-                    .append(mf.format(new Object[]{i,"packType"})+",")
-                    .append(mf.format(new Object[]{i,"goodNumber"})+",")
-                    .append(mf.format(new Object[]{i,"produceDate"})+",")
-                    .append(mf.format(new Object[]{i,"lifeTime"})+",")
-                    .append(mf.format(new Object[]{i,"qrCodeNum"})+" ")
+                    .append(mf.format(new Object[]{String.valueOf(i),"goodId"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"goodTypeId"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"goodBatch"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"goodCode"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"packType"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"goodNumber"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"produceDate"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"lifeTime"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"qrCodeNum"})+" ")
                     .append(")");
             if (i < goodDetails.size() - 1) {
                 sb.append(",");

@@ -1,7 +1,10 @@
-function ChartLine(svg,width,height){
-    var _svg = svg;
-    var radio = 1/8;
-    var padding = {top:height*radio,right:width*radio,bottom:height*radio,left:width*radio};
+function ChartLine(svg){
+    var _svg = svg,
+        width = _svg.attr("width"),
+        height = _svg.attr("height"),
+        _margin = {top:20,right:40,bottom:30,left:50},
+        _width = width - _margin.left-_margin.right,
+        _height = height-_margin.top-_margin.bottom
     var _gxAxis = null,
         _xScale = null,
         _xAxis = null,
@@ -15,33 +18,67 @@ function ChartLine(svg,width,height){
         _vLine = null,
         _hLine = null,
         _mouseRect = null,
-        _grid = null;
+        _grid = null,
+        _path_gen = null,
+        _area_gen = null,
+        _main_g = null,
+        _zoom = null,
+        _zoomXScale = null;
 
-    this.init = function(width,height){
-        _xScale = d3.scaleLinear();
+    this.init = function(){
+        _xScale = d3.scaleTime().range([0,_width]);
+        _yScale = d3.scaleLinear().range([_height,0]);
         // 定义坐标轴
         _xAxis = d3.axisBottom(_xScale)
-            .tickFormat(d3.format("d"));
-
-        _gxAxis = _svg.append("g")
-            .attr("class","axis")
-            .attr("transform","translate("+padding.left+","+(height-padding.bottom)+")")
-            .call(_xAxis);
-        _xAxisTitle = _svg.append("text")
-            .attr("class","axis-title")
-            .attr("transform","translate("+(width-padding.right)+","+(height-padding.bottom)+")")
-
-        _yScale = d3.scaleLinear();
-        // 定义坐标轴
         _yAxis = d3.axisLeft(_yScale)
-            .tickFormat(d3.format("d"));
-        _gyAxis = _svg.append("g")
-            .attr("class","axis")
-            .attr("transform","translate("+padding.left+","+(padding.top)+")")
-            .call(_yAxis);
-        _yAxisTitle = _svg.append("text")
+            // .tickFormat(d3.format("d"));
+        _svg.append("defs").append("clipPath")
+            .attr("id", "clip")
+            .append("rect")
+            .attr("width", _width)
+            .attr("height", _height);
+        // 直线生成器
+        _path_gen = d3.line()
+            .curve(d3.curveCatmullRom)
+            .x(function (d) {
+                return _xScale(d[0]);
+            })
+            .y(function (d) {
+                return _yScale(d[1]);
+            });
+        _area_gen = d3.area()
+            .curve(d3.curveMonotoneX)
+            .x(function(d) { return _xScale(d[0]); })
+            .y0(_height)
+            .y1(function(d) { return _yScale(d[1]); });
+
+        // 缩放控制器
+        _zoom = d3.zoom()
+            .scaleExtent([1, 32])
+            .translateExtent([[0, 0], [_width, _height]])
+            .extent([[0, 0], [_width, _height]])
+            .on("zoom", zoomed);
+
+        _main_g = _svg.append("g")
+            .attr("class","main-g")
+            .attr("transform","translate("+_margin.left+","+_margin.top+")")
+
+        _gxAxis = _main_g.append("g")
+            .attr("class","axis axis--x")
+            .attr("transform","translate(0,"+_height+")")
+            .call(_xAxis);
+        _xAxisTitle = _main_g.append("text")
             .attr("class","axis-title")
-            .attr("transform","translate("+(padding.left)+","+(padding.top)+")")
+            .attr("transform","translate("+(_width)+","+_height+")")
+
+        _gyAxis = _main_g.append("g")
+            .attr("class","axis axis--y")
+            .call(_yAxis);
+        _yAxisTitle = _main_g.append("text")
+            .attr("class","axis-title")
+
+        _main_g.append("path")
+            .attr("class","data-line area")
 
         _grid = _svg.append("g")
             .attr("class","grid")
@@ -54,25 +91,27 @@ function ChartLine(svg,width,height){
         chart_line_title["yAxis"] = chart_line_title["yAxis"] || "";
         if(!data_set || !data_map)
             return;
-        var year_min_max = d3.extent(data_set,function (value) {
-            return Number(value[0]);
-        })
-        var num_min_max = d3.extent(data_set,function (value) {
-            return Number(value[1]);
-        })
         _xScale
-            .domain([year_min_max[0]-1,year_min_max[1]+1])
-            .range([0,width-padding.left-padding.right]);
+            .domain(d3.extent(data_set,function(d){return d[0];}));
         _yScale
-            .domain([0,num_min_max[1]*1.1])
-            .range([height-padding.top-padding.bottom,0]);
+            .domain([0,d3.max(data_set,function(d){return d[1];})+1]);
 
+        _zoomXScale = _xScale;
         draw_data_line(data_set);
-        draw_axis(chart_line_title,data_set.length);
-        draw_grid();
+        draw_axis(chart_line_title);
+
+        var d0 = d3.quantile(data_set,0.25,function(d){return d[0].getTime()}),
+            d1 = d3.quantile(data_set,0.75,function(d){return d[0].getTime()});
+        // Gratuitous intro zoom!
+        _svg.call(_zoom).transition()
+            .duration(1500)
+            .call(_zoom.transform, d3.zoomIdentity
+                .scale(width / (_xScale(d1) - _xScale(d0)))
+                .translate(-_xScale(d0), 0));
+        // draw_grid(_xScale);
         _mouseRect.on("mousemove",function () {
             // 获取鼠标相对透明矩形左上角的坐标，左上角坐标为(0,0)
-            var temp = get_new_coordinate(this,_xScale,_yScale,data_set);
+            var temp = get_new_coordinate(this,_zoomXScale,_yScale,data_set);
             if(!temp)
                 return;
             update_axis_tip(formatStr,temp[0][0],temp[0][1],temp[1][0],temp[1][1]);
@@ -80,78 +119,74 @@ function ChartLine(svg,width,height){
 
     }
 
-    function draw_data_line(data_set) {
-        function default_set(ele,linePath){
+    function draw_data_line(data_set,gen) {
+        function default_set(ele,gen){
             if(!ele)
                 return;
             var temp = [];
 
-            ele.attr("class","data-line")
-                .attr("transform","translate("+padding.left+","+padding.top+")")
-                .attr("d",function (d) {
-                    var data_set = d.value;
-                    for(var i=0,len=data_set.length;i<len;i++){
-                        temp.push([data_set[i][0],0]);
-                    }
-                    return linePath(temp)
-                })
-                .transition()
-                .duration(1000)
-                .attr("d",function (d) {
-                    return linePath(d.value);
-                })
+            ele.attr("class","data-line area")
+                // .attr("d",function (d) {
+                //     var data_set = d.value;
+                //     for(var i=0,len=data_set.length;i<len;i++){
+                //         temp.push([data_set[i][0],0]);
+                //     }
+                //     return _path_gen(temp)
+                // })
+                // .transition()
+                // .duration(1000)
+                .attr("d",gen)
         }
-        // 直线生成器
-        var linePath = d3.line()
-            .curve(d3.curveCatmullRom)
-            .x(function (d) {
-                return _xScale(d[0]);
-            })
-            .y(function (d) {
-                return _yScale(d[1]);
-            });
-        var update = _svg.selectAll("path.data-line")
-            .data([{value:data_set}]);
+
+        var update = _main_g.select("path.data-line")
+            .datum(data_set);
         var enter = update.enter();
         var exit = update.exit();
 
         exit.remove();
-        default_set(enter.append("path"),linePath);
-        default_set(update,linePath);
+        default_set(enter.append("path"),_area_gen);
+        default_set(update,_area_gen);
     }
 
-    function draw_axis(chart_line_title,xTicks) {
-        _xAxis.ticks(xTicks);
+    function draw_axis(chart_line_title) {
         _gxAxis.transition()
-            .duration(2000)
+            .duration(1000)
             .call(_xAxis);
         _xAxisTitle.text(chart_line_title["xAxis"]);
 
         _gyAxis.transition()
-            .duration(2000)
+            .duration(1000)
             .call(_yAxis);
         _yAxisTitle.text(chart_line_title["yAxis"]);
     }
 
-    function draw_grid() {
+    function zoomed() {
+        var t = d3.event.transform, xt = t.rescaleX(_xScale);
+        _path_gen.x(function(d) {return xt(d[0]);})
+        _area_gen.x(function(d) {return xt(d[0]);})
+        _zoomXScale = xt;
+        // draw_grid(xt);
+        _main_g.select(".data-line").attr("d",_area_gen);
+        _main_g.select(".axis--x").call(_xAxis.scale(xt));
+    }
+
+    function draw_grid(xScale) {
         var update = null,
             enter = null,
             exit = null;
         function default_xLine_set(xLine) {
             xLine
-                .attr("x1",_xScale)
-                .attr("x2",_xScale)
-                .attr("y2",padding.top)
-                .attr("y1",(height-padding.bottom))
-                .attr("transform","translate("+padding.left+",0)")
+                .attr("x1",xScale)
+                .attr("x2",xScale)
+                .attr("y2",_margin.top)
+                .attr("y1",_height+_margin.top)
         }
         function default_yLine_set(yLine) {
             yLine
-                .attr("y1",_yScale)
-                .attr("y2",_yScale)
-                .attr("x1",padding.left)
-                .attr("x2",(width-padding.left))
-                .attr("transform","translate(0,"+(padding.bottom)+")")
+                .attr("y1",function(d){return _yScale(d)-_margin.bottom})
+                .attr("y2",function(d){return _yScale(d)-_margin.bottom})
+                .attr("x1",_margin.left)
+                .attr("x2",(_width+_margin.left))
         }
         update = _grid.selectAll("line.grid-xLine")
             .data(_xScale.ticks());
@@ -190,10 +225,10 @@ function ChartLine(svg,width,height){
 
         _mouseRect = _svg.append("rect")
             .attr("class","overlay")
-            .attr("x",padding.left)
-            .attr("y",padding.top)
-            .attr("width",width-padding.left-padding.right)
-            .attr("height",height-padding.top-padding.bottom)
+            .attr("x",_margin.left)
+            .attr("y",_margin.top)
+            .attr("width",width-_margin.left-_margin.right)
+            .attr("height",height-_margin.top-_margin.bottom)
             .on("mouseover",function () {
                 _focusCirle.style("display",null);
                 _focusLine.style("display",null);
@@ -204,8 +239,8 @@ function ChartLine(svg,width,height){
             })
     }
     function get_new_coordinate(content,xScale,yScale,data_set){
-        var mouseX = d3.mouse(content)[0] - padding.left;
-        var mouseY = d3.mouse(content)[1] - padding.top;
+        var mouseX = d3.mouse(content)[0] - _margin.left;
+        var mouseY = d3.mouse(content)[1] - _margin.top;
 
         // 通过比例尺的反函数计算原数据中的值
         var x0 = xScale.invert(mouseX);
@@ -223,8 +258,8 @@ function ChartLine(svg,width,height){
         var x1 = data_set[index][0];
         var y1 = data_set[index][1];
         // 分别用相应的比例尺，计算焦点位置
-        var focusX = xScale(x1) + padding.left;
-        var focusY = yScale(y1) + padding.top;
+        var focusX = xScale(x1) + _margin.left;
+        var focusY = yScale(y1) + _margin.top;
         return [[x1,y1],[focusX,focusY]];
     }
     function update_axis_tip(formatStr,x1,y1,focusX,focusY){
@@ -233,26 +268,26 @@ function ChartLine(svg,width,height){
         // 设置焦点的文字信息
         var temp_text = _focusCirle.select("text")
             .attr("dx",function () {
-                return width/2-focusX;
+                return _width/2-focusX;
             })
             .attr("dy",function () {
-                return height/2-focusY;
+                return _height/2-focusY;
             })
         // console.log(typeof formatStr == "string");
         if(typeof formatStr == "string"){
             // console.log(formatStr.format(x1,y1))
-            temp_text.text(formatStr.format(x1,y1));
+            temp_text.text(formatStr.format(x1.getFullYear(),x1.getMonth()+1,y1));
         }
 
         // 设置垂直对齐线的起点和终点
         _vLine.attr("x1",focusX)
             .attr("y1",focusY)
             .attr("x2",focusX)
-            .attr("y2",height-padding.bottom);
+            .attr("y2",height-_margin.bottom);
         // 设置水平对齐线的起点和终点
         _hLine.attr("x1",focusX)
             .attr("y1",focusY)
-            .attr("x2",padding.left)
+            .attr("x2",_margin.left)
             .attr("y2",focusY);
     }
 
@@ -266,5 +301,5 @@ function ChartLine(svg,width,height){
         _svg.attr("display",null)
     }
 
-    this.init(width,height);
+    this.init();
 }

@@ -1,6 +1,10 @@
-function ChartTree(svg,width,height) {
-    var _svg = svg;
-    var _margin = {top: 20, right: 120, bottom: 20, left: 120}
+function ChartTree(svg) {
+    var _svg = svg,
+        width = _svg.attr("width"),
+        height = _svg.attr("height"),
+        _margin = {top: 20, right: 120, bottom: 20, left: 120},
+        _width = width-_margin.left-_margin.right,
+        _height = height-_margin.top-_margin.bottom;
     var _duration_time = 250;
 
     var _layout = null

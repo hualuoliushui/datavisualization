@@ -27,11 +27,11 @@ public class GoodTypeDetailMapperProvider {
         for (int i = 0; i < goodTypeDetails.size(); i++) {
             sb.append("(")
                     .append("#{record_id},")
-                    .append(mf.format(new Object[]{i,"goodTypeId"})+",")
-                    .append(mf.format(new Object[]{i,"merchantId"})+",")
-                    .append(mf.format(new Object[]{i,"typeCode"})+",")
-                    .append(mf.format(new Object[]{i,"typeName"})+",")
-                    .append(mf.format(new Object[]{i,"producePlace"})+" ")
+                    .append(mf.format(new Object[]{String.valueOf(i),"goodTypeId"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"merchantId"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"typeCode"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"typeName"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"producePlace"})+" ")
                     .append(")");
             if (i < goodTypeDetails.size() - 1) {
                 sb.append(",");

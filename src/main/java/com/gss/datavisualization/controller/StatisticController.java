@@ -62,8 +62,8 @@ public class StatisticController {
 
     @RequestMapping(value="/getNumOfData",method = RequestMethod.GET)
     public Object getNumOfData(@RequestParam("recordId")int recordId){
-//        return ResultUtil.resultGoodReturner(10);
-        return statisticService.getNumOfData(recordId);
+        return ResultUtil.resultGoodReturner(10);
+//        return statisticService.getNumOfData(recordId);
     }
 
     @RequestMapping(value = "/getData",method = RequestMethod.GET)

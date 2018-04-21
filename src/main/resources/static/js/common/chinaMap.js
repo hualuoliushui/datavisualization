@@ -1,4 +1,4 @@
-function ChinaMap(svg,width,height){
+function ChinaMap(svg){
     function ToolTip(){
         this._toolTip = d3.select("body")
             .append("div")
@@ -68,7 +68,12 @@ function ChinaMap(svg,width,height){
             .attr("fill","#000");
     }
 
-    var _svg = svg;
+    var _svg = svg,
+        width = +_svg.attr("width"),
+        height = +_svg.attr("height"),
+        _margin = {left:30,right:30,top:30,bottom:30},
+        _width = width-_margin.left-_margin.right,
+        _height = height-_margin.top-_margin.bottom;
     var _main_china_json_features = null;
     // 小贴士
     var _tooltip = new ToolTip()
@@ -145,7 +150,7 @@ function ChinaMap(svg,width,height){
                 }
                 if(!((typeof formatStr) =="string"))
                     return;
-                this.get_ele().html(formatStr.format(getName(d),data_map[getName(d)]?data_map[getName(d)]:0))
+                this.get_ele().html(formatStr.format(getName(d),data_map.has(getName(d))?data_map.get(getName(d)):0))
                     .style("left",(event.pageX)+"px")
                     .style("top",(event.pageY+20)+"px")
                     .style("opacity",1.0)
@@ -178,7 +183,7 @@ function ChinaMap(svg,width,height){
                 function getName(d) {
                     return d.properties.name;
                 }
-                var value = data_map[getName(d)] ? data_map[getName(d)] : 0;
+                var value = data_map.has(getName(d)) ? data_map.get(getName(d)) : 0;
                 var t = linear(value);
                 var t_color = computeColor(t);
                 return t_color.toString();

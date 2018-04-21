@@ -2,7 +2,7 @@ $(function () {
     var width = 800;
     var height = 525;
 
-    var data_cache = {};
+    var data_cache = new Map();
     var data_cache_state = {
         init:0
         ,working:1
@@ -406,16 +406,16 @@ $(function () {
 
     function init_chart(china_json) {
         chart_pie = new PIE(d3.select("#pie").append("svg").attr("width", width)
-            .attr("height", height), width / 2, height / 2);
+            .attr("height", height));
         chart_china_map = new ChinaMap(d3.select("#chinaMap").append("svg").attr("width", width)
-            .attr("height", height), width, height);
+            .attr("height", height));
         chart_line = new ChartLine(d3.select("#chartLine").append("svg").attr("width", width)
-            .attr("height", height), width, height);
+            .attr("height", height));
         chart_chord = new ChartChord(d3.select("#chartChord").append("svg").attr("width",width*1.25)
             .attr("height",height*1.5));
         chart_china_map.init(china_json);
         // chart_tree = new ChartTree(d3.select("#chartTree").append("svg").attr("width",width)
-        //     .attr("height",height*2),width,height*2);
+        //     .attr("height",height*2));
     }
 
     function getProvince(companyArea) {
@@ -432,6 +432,11 @@ $(function () {
             return;
         return createTime.substr(0, 4);
     }
+    
+    function getDate(dateStr) {
+        var d=new Date(dateStr);
+        return (new Date(d.getFullYear(),d.getMonth())).getTime();
+    }
 
     var data_types_description_indexes = [1, 2]
 
@@ -439,9 +444,9 @@ $(function () {
         1: {
             data_type: 1,
             area_arr: [],
-            area_map: {},
+            area_map: new Map(),
             time_arr: [],
-            time_map: {},
+            time_map: new Map(),
             get_area_key: function (companyArea) {
                 if (!companyArea) return;
                 return [{key: getProvince(companyArea), num: 1}];
@@ -449,20 +454,20 @@ $(function () {
             area_key_value_des: "companyArea",
             get_time_key: function (createDate) {
                 if (!createDate) return;
-                return [{key: getCreateYear(createDate), num: 1}];
+                return [{key: getDate(createDate), num: 1}];
             },
             time_key_value_des: "createDate",
-            chart_line_tip: "{0}年商户注册量: {1}人",
+            chart_line_tip: "{0}年{1}月-商户注册量: {1}人",
             chart_china_map_tip : "{0}<br>{1}人",
-            chart_line_title: {xAxis: "年份", yAxis: "当年注册商户人数"},
+            chart_line_title: {xAxis: "日期", yAxis: "注册商户人数"},
             sub_title: "商户数量-地域-时间分布"
         },
         2: {
             data_type: 2,
             area_arr: [],
-            area_map: {},
+            area_map: new Map(),
             time_arr: [],
-            time_map: {},
+            time_map: new Map(),
             get_area_key: function (goodTypeDetail) {
                 if(!goodTypeDetail) return;
                 if (!(goodTypeDetail instanceof Object)) return;
@@ -486,7 +491,7 @@ $(function () {
                 if (goodDetails instanceof Array) {
                     for (var i = 0, len = goodDetails.length; i < len; i++) {
                         keys.push({
-                            key: getCreateYear(goodDetails[i]["produceDate"]),
+                            key: getDate(goodDetails[i]["produceDate"]),
                             num: Number(goodDetails[i]["goodNumber"])
                         });
                     }
@@ -494,7 +499,7 @@ $(function () {
                     goodDetails.each(function (value, key) {
                         // console.log("get_time_key",value,key);
                         keys.push({
-                            key: getCreateYear(value["produceDate"]),
+                            key: getDate(value["produceDate"]),
                             num: Number(value["goodNumber"])
                         })
                     })
@@ -502,9 +507,9 @@ $(function () {
                 return keys;
             },
             time_key_value_des: "goodDetails",
-            chart_line_tip: "{0}年商品生产数量:{1}份",
+            chart_line_tip: "{0}年{1}月-商品生产数量:{2}份",
             chart_china_map_tip: "{0}<br>{1}份",
-            chart_line_title: {xAxis: "年份", yAxis: "当年生产商品数"},
+            chart_line_title: {xAxis: "日期", yAxis: "商品生产数量"},
             sub_title: "商品数量-地域-时间分布"
         }
     }
@@ -516,33 +521,40 @@ $(function () {
             keys = (keys instanceof Array) ? keys : [keys]
             for (var j = 0, len = keys.length; j < len; j++) {
                 var key = keys[j];
-                if (!data_map.hasOwnProperty(key.key)) {
-                    data_map[key.key] = key.num;
+                if (!data_map.has(key.key)) {
+                    data_map.set(key.key,key.num);
                 } else {
-                    data_map[key.key] += key.num;
+                    data_map.set(key.key,data_map.get(key.key)+key.num);
                 }
             }
         });
-        for (var key in data_map) {
-            data_set.push([key, data_map[key]])
-        }
     }
 
     function deal_area_num_data(data, data_type_obj) {
-        data_type_obj.area_arr=[];
         deal_data(data, data_type_obj.area_arr, data_type_obj.area_map,
             data_type_obj.area_key_value_des,
             data_type_obj.get_area_key);
+        data_type_obj.area_arr=[];
+        data_type_obj.area_map.forEach(function (value,key) {
+            data_type_obj.area_arr.push([key,value]);
+        })
     }
 
     function deal_time_num_data(data, data_type_obj) {
-        data_type_obj.time_arr=[];
         deal_data(data, data_type_obj.time_arr, data_type_obj.time_map,
             data_type_obj.time_key_value_des,
             data_type_obj.get_time_key);
+        data_type_obj.time_arr=[];
+        data_type_obj.time_map.forEach(function (value,key) {
+            data_type_obj.time_arr.push([new Date(key),value]);
+        })
+        data_type_obj.time_arr.sort(function (a, b) {
+            return d3.ascending(a[0].getTime(),b[0].getTime());
+        })
     }
 
     function draw_pie(data_type) {
+        if(!chart_pie) return;
         chart_pie.convertData(data_types_description[data_type].area_arr)
         chart_pie.draw("{0} <br/> {1}({2})");
     }
@@ -586,8 +598,8 @@ $(function () {
     }
 
     function make_sure_data_cache(recordId) {
-        if (!data_cache.hasOwnProperty(recordId) || !data_cache[recordId]){
-            data_cache[recordId] = {
+        if (!data_cache.has(recordId) || !data_cache.get(recordId)){
+            data_cache.set(recordId,{
                 record_id:recordId
                 ,state:data_cache_state.init
                 ,nextState:data_cache_state.init
@@ -595,7 +607,7 @@ $(function () {
                 ,limit:10
                 ,offset:0
                 ,data:[]
-            }
+            });
         }
     }
 
@@ -607,29 +619,33 @@ $(function () {
     function getDataUrl(recordId) {
         make_sure_data_cache(recordId);
         return "/statistic/getData?recordId=" + recordId + "" +
-            "&limit="+data_cache[recordId]["limit"] +"" +
-            "&offset="+data_cache[recordId]["offset"];
+            "&limit="+data_cache.get(recordId)["limit"] +"" +
+            "&offset="+data_cache.get(recordId)["offset"];
     }
 
     function get_data_cache_state(recordId) {
         make_sure_data_cache(recordId);
-        return [data_cache[recordId]["state"],data_cache[recordId]["nextState"]];
+        return [data_cache.get(recordId)["state"],data_cache.get(recordId)["nextState"]];
     }
 
     function update_data_cache_total(recordId,total) {
-        if(Number.isNaN(+total))
+        var t = +total;
+        if(Number.isNaN(t))
             return false;
         make_sure_data_cache(recordId);
-        data_cache[recordId]["total"]= +total;
+        data_cache.get(recordId)["total"]= t;
+        if(t>10){
+            data_cache.get(recordId)["limit"]=Math.floor(t/5);
+        }
         return true;
     }
 
     function update_data_cache(recordId,data_detail) {
         make_sure_data_cache(recordId);
-        if(data_cache[recordId]["offset"]==data_detail["offset"]){
-            data_cache[recordId]["data"]=data_cache[recordId]["data"].concat(data_detail["data"])
-            data_cache[recordId]["offset"]+=data_detail["limit"];
-            if(data_cache[recordId]["offset"]==data_cache[recordId]["total"])
+        if(data_cache.get(recordId)["offset"]==data_detail["offset"]){
+            data_cache.get(recordId)["data"]=data_cache.get(recordId)["data"].concat(data_detail["data"])
+            data_cache.get(recordId)["offset"]+=data_detail["limit"];
+            if(data_cache.get(recordId)["offset"]>=data_cache.get(recordId)["total"])
                 update_data_cache_state(recordId,data_cache_state.complete);
             return true;
         }else
@@ -639,11 +655,11 @@ $(function () {
     function update_data_cache_state(recordId, next_state) {
         make_sure_data_cache(recordId);
         if(next_state==data_cache_state.init){
-            data_cache[recordId]=null;
+            data_cache.set(recordId,null);
             make_sure_data_cache(recordId);
         }
-        data_cache[recordId]["state"]=data_cache[recordId]["nextState"];
-        data_cache[recordId]["nextState"]=next_state;
+        data_cache.get(recordId)["state"]=data_cache.get(recordId)["nextState"];
+        data_cache.get(recordId)["nextState"]=next_state;
     }
 
     function init_data(recordId) {
@@ -655,11 +671,11 @@ $(function () {
 
     function work(recordId) {
         var [state,nextState] = get_data_cache_state(recordId);
-        console.log("recordId:"+recordId,state,nextState);
+        // console.log("recordId:"+recordId,state,nextState);
         if(state==nextState && state==data_cache_state.complete){
             deal_msg("更新视图数据中");
             empty_data();
-            work_with_data(recordId,data_cache[recordId]["data"]);
+            work_with_data(recordId,data_cache.get(recordId)["data"]);
             deal_msg("更新视图数据完毕");
             return;
         }
@@ -682,9 +698,9 @@ $(function () {
     function empty_data() {
         for(var i=0,len=data_types_description_indexes.length;i<len;i++){
             data_types_description[data_types_description_indexes[i]].area_arr=[];
-            data_types_description[data_types_description_indexes[i]].area_map={};
+            data_types_description[data_types_description_indexes[i]].area_map=new Map();
             data_types_description[data_types_description_indexes[i]].time_arr=[];
-            data_types_description[data_types_description_indexes[i]].time_map={};
+            data_types_description[data_types_description_indexes[i]].time_map=new Map();
         }
         chart_with_mutil_select_description["set_data"](d3.map());
     }
@@ -757,7 +773,7 @@ $(function () {
 
     function deal_All_data(recordId) {
         make_sure_data_cache(recordId);
-        var data = data_cache[recordId]["data"];
+        var data = data_cache.get(recordId)["data"];
         var temp = [];
         var merchants = [];
         var goodTypes = [];
@@ -837,7 +853,7 @@ $(function () {
         if (!type)
             return;
         chart_china_map.hide();
-        chart_pie.hide();
+        chart_pie && chart_pie.hide();
         chart_line.hide();
         chart_chord.hide();
         chart_tree && chart_tree.hide();
@@ -846,7 +862,7 @@ $(function () {
                 chart_china_map.show();
                 break;
             case 2:
-                chart_pie.show();
+                chart_pie && chart_pie.show();
                 break;
             case 3:
                 chart_line.show();

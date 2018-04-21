@@ -30,16 +30,16 @@ public class MerchantDetailMapperProvider {
         for (int i = 0; i < merchantDetails.size(); i++) {
             sb.append("(")
                     .append("#{record_id},")
-                    .append(mf.format(new Object[]{i,"merchantId"})+",")
-                    .append(mf.format(new Object[]{i,"createDate"})+",")
-                    .append(mf.format(new Object[]{i,"userName"})+",")
-                    .append(mf.format(new Object[]{i,"merchantName"})+",")
-                    .append(mf.format(new Object[]{i,"companyName"})+",")
-                    .append(mf.format(new Object[]{i,"companyArea"})+",")
-                    .append(mf.format(new Object[]{i,"areaCode"})+",")
-                    .append(mf.format(new Object[]{i,"gisLocation"})+",")
-                    .append(mf.format(new Object[]{i,"companyCode"})+",")
-                    .append(mf.format(new Object[]{i,"businessScope"}))
+                    .append(mf.format(new Object[]{String.valueOf(i),"merchantId"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"createDate"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"userName"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"merchantName"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"companyName"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"companyArea"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"areaCode"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"gisLocation"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"companyCode"})+",")
+                    .append(mf.format(new Object[]{String.valueOf(i),"businessScope"}))
                     .append(")");
             if (i < merchantDetails.size() - 1) {
                 sb.append(",");
