@@ -183,6 +183,8 @@ $(function () {
                             return;
                         let year_num_map = d3.map();
                         value.each(function (value, year) {
+                            if (!check_options_has_key("year",year))
+                                return;
                             for(let i=0,ilen=value.length;i<ilen;i++){
                                 let temp = +value[i]["num"];
                                 if (Number.isNaN(temp)) continue;
@@ -457,7 +459,7 @@ $(function () {
                 return [{key: getDate(createDate), num: 1}];
             },
             time_key_value_des: "createDate",
-            chart_line_tip: "{0}年{1}月-商户注册量: {1}人",
+            chart_line_tip: "{0}年{1}月-商户注册量: {2}人",
             chart_china_map_tip : "{0}<br>{1}人",
             chart_line_title: {xAxis: "日期", yAxis: "注册商户人数"},
             sub_title: "商户数量-地域-时间分布"
@@ -582,11 +584,17 @@ $(function () {
             data_types_description[data_type].chart_china_map_tip);
     }
 
+    function get_chart_line_point_check_box_state() {
+        return d3.select("#chart_line_point_check_box").select("input").node().checked;
+    }
+
     function draw_line(data_type) {
-        chart_line.draw(data_types_description[data_type].time_arr
+        chart_line && chart_line.draw(data_types_description[data_type].time_arr
             , data_types_description[data_type].time_map
             , data_types_description[data_type].chart_line_tip,
-            data_types_description[data_type].chart_line_title);
+            data_types_description[data_type].chart_line_title
+            );
+        chart_line && chart_line.set_data_point_state(get_chart_line_point_check_box_state());
     }
 
     function disable_record_select() {
@@ -848,15 +856,21 @@ $(function () {
             draw_line(data_type);
         }
     }
-
-    function change_chart_show(type) {
-        if (!type)
-            return;
+    
+    function hide_for_chart_change() {
         chart_china_map.hide();
         chart_pie && chart_pie.hide();
         chart_line.hide();
         chart_chord.hide();
         chart_tree && chart_tree.hide();
+
+        hide_chart_line_point_check_box();
+    }
+
+    function change_chart_show(type) {
+        if (!type)
+            return;
+        hide_for_chart_change();
         switch (type) {
             case 1:
                 chart_china_map.show();
@@ -866,6 +880,7 @@ $(function () {
                 break;
             case 3:
                 chart_line.show();
+                show_chart_line_point_check_box()
                 break;
             case 4:
                 chart_chord.show();
@@ -970,6 +985,21 @@ $(function () {
         })
     }
     
+    function hide_chart_line_point_check_box() {
+        d3.select("#chart_line_point_check_box").style("display","none");
+    }
+
+    function show_chart_line_point_check_box() {
+        d3.select("#chart_line_point_check_box").style("display",null);
+    }
+    
+    function set_chart_line_point_check_box_callback() {
+        d3.select("#chart_line_point_check_box").select("input")
+            .on("change",function(){
+                chart_line && chart_line.set_data_point_state(get_chart_line_point_check_box_state());
+            })
+    }
+    
     function init_chart_type_select(data_type) {
         data_type = data_type || 1;
         update_chart_type_select(data_type);
@@ -1016,11 +1046,13 @@ $(function () {
         init_chart_type_select();
         chart_type = Number($("#chart_type").val());
         hide_filter_select();
+        hide_chart_line_point_check_box();
         set_sub_title(data_type);
         set_change_record_callback();
         set_change_data_type_callback();
         set_change_chart_callback();
         set_save_svg_callback();
+        set_chart_line_point_check_box_callback();
         init_filter_select();
         var url = "/json/china.json";
         request(url)

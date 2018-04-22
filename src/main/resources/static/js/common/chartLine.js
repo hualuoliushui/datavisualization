@@ -4,7 +4,8 @@ function ChartLine(svg){
         height = _svg.attr("height"),
         _margin = {top:20,right:40,bottom:30,left:50},
         _width = width - _margin.left-_margin.right,
-        _height = height-_margin.top-_margin.bottom
+        _height = height-_margin.top-_margin.bottom,
+        _color = d3.scaleOrdinal(d3.schemeCategory20);
     var _gxAxis = null,
         _xScale = null,
         _xAxis = null,
@@ -23,7 +24,8 @@ function ChartLine(svg){
         _area_gen = null,
         _main_g = null,
         _zoom = null,
-        _zoomXScale = null;
+        _zoomXScale = null,
+        _area_color = null;
 
     this.init = function(){
         _xScale = d3.scaleTime().range([0,_width]);
@@ -78,10 +80,11 @@ function ChartLine(svg){
             .attr("class","axis-title")
 
         _main_g.append("path")
-            .attr("class","data-line area")
+            .attr("class","data-line clip_path")
 
         _grid = _svg.append("g")
             .attr("class","grid")
+        _area_color = "steelblue";
         init_axis_tip()
     }
 
@@ -91,23 +94,26 @@ function ChartLine(svg){
         chart_line_title["yAxis"] = chart_line_title["yAxis"] || "";
         if(!data_set || !data_map)
             return;
+        var y_max = d3.max(data_set,function(d){return d[1];}) || 25;
         _xScale
             .domain(d3.extent(data_set,function(d){return d[0];}));
         _yScale
-            .domain([0,d3.max(data_set,function(d){return d[1];})+1]);
+            .domain([0,y_max+1]);
 
         _zoomXScale = _xScale;
         draw_data_line(data_set);
+        draw_data_point(data_set);
         draw_axis(chart_line_title);
 
         var d0 = d3.quantile(data_set,0.25,function(d){return d[0].getTime()}),
             d1 = d3.quantile(data_set,0.75,function(d){return d[0].getTime()});
         // Gratuitous intro zoom!
-        _svg.call(_zoom).transition()
-            .duration(1500)
-            .call(_zoom.transform, d3.zoomIdentity
-                .scale(width / (_xScale(d1) - _xScale(d0)))
-                .translate(-_xScale(d0), 0));
+        _svg.call(_zoom)
+            // .transition()
+            // .duration(1500)
+            // .call(_zoom.transform, d3.zoomIdentity
+            //     .scale(width / (_xScale(d1) - _xScale(d0)))
+            //     .translate(-_xScale(d0), 0));
         // draw_grid(_xScale);
         _mouseRect.on("mousemove",function () {
             // 获取鼠标相对透明矩形左上角的坐标，左上角坐标为(0,0)
@@ -119,13 +125,36 @@ function ChartLine(svg){
 
     }
 
+    function draw_data_point(data_set) {
+        var r_max = 10;
+        var y_max = d3.max(data_set,function(d){return d[1];}) || 10;
+        function default_set(ele) {
+            if(!ele)return;
+            ele.attr("class","data-point clip_path")
+                .attr("r",function(d){return d[1]/y_max*r_max})
+                .attr("cx",function(d){return _xScale(d[0]);})
+                .attr("cy",function(d){return _yScale(d[1]);})
+                .attr("fill",function(d,i){return _color(i);})
+        }
+        var update = _main_g.selectAll("circle.clip_path")
+            .data(data_set);
+        var enter = update.enter();
+        var exit = update.exit();
+
+        exit.remove();
+        default_set(enter.append("circle"),_area_gen);
+        default_set(update,_area_gen);
+    }
+
     function draw_data_line(data_set,gen) {
         function default_set(ele,gen){
             if(!ele)
                 return;
             var temp = [];
 
-            ele.attr("class","data-line area")
+            ele.classed("data-line",true)
+                .classed("clip_path",true)
+                .style("fill",_area_color)
                 // .attr("d",function (d) {
                 //     var data_set = d.value;
                 //     for(var i=0,len=data_set.length;i<len;i++){
@@ -166,6 +195,7 @@ function ChartLine(svg){
         _area_gen.x(function(d) {return xt(d[0]);})
         _zoomXScale = xt;
         // draw_grid(xt);
+        _main_g.selectAll(".data-point").attr("cx",function(d){return _zoomXScale(d[0]);})
         _main_g.select(".data-line").attr("d",_area_gen);
         _main_g.select(".axis--x").call(_xAxis.scale(xt));
     }
@@ -271,7 +301,7 @@ function ChartLine(svg){
                 return _width/2-focusX;
             })
             .attr("dy",function () {
-                return _height/2-focusY;
+                return _margin.top-focusY;
             })
         // console.log(typeof formatStr == "string");
         if(typeof formatStr == "string"){
@@ -299,6 +329,27 @@ function ChartLine(svg){
     }
     this.show = function () {
         _svg.attr("display",null)
+    }
+    this.set_data_point_state = function(state){
+        var show_point = function () {
+            if(!_main_g)return;
+            _main_g.selectAll(".data-point")
+                .attr("display",null)
+            _main_g.selectAll(".data-line")
+                .attr("display","none")
+        }
+
+        var hide_point = function () {
+            if(!_main_g)return;
+            _main_g.selectAll(".data-point")
+                .attr("display","none");
+            _main_g.selectAll(".data-line")
+                .attr("display",null)
+        }
+        if(state)
+            show_point();
+        else
+            hide_point();
     }
 
     this.init();

@@ -81,6 +81,11 @@
                         <div id="year_div">
                             <select multiple="multiple" id="year">年份</select>
                         </div>
+                        <div class="checkbox" id="chart_line_point_check_box">
+                            <label>
+                                <input type="checkbox">显示数据点
+                            </label>
+                        </div>
                         <button class="btn btn-sm btn-outline-secondary" id="export_chart">导出</button>
                         <select class="btn btn-sm btn-outline-secondary" id="chart_type">
                             <#--<option value="1">中国地图</option>-->

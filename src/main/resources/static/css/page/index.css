@@ -219,7 +219,6 @@ li.multi-select-selected a label {
     background-attachment: fixed;
 }
 
-.area {
-    fill: steelblue;
+.clip_path {
     clip-path: url(#clip);
 }
