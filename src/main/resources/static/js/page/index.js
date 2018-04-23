@@ -412,7 +412,7 @@ $(function () {
         chart_china_map = new ChinaMap(d3.select("#chinaMap").append("svg").attr("width", width)
             .attr("height", height));
         chart_line = new ChartLine(d3.select("#chartLine").append("svg").attr("width", width)
-            .attr("height", height));
+            .attr("height", height),true);
         chart_chord = new ChartChord(d3.select("#chartChord").append("svg").attr("width",width*1.25)
             .attr("height",height*1.5));
         chart_china_map.init(china_json);
@@ -564,7 +564,7 @@ $(function () {
     function draw_china_flow() {
         if (!chart_china_map) return;
         chart_china_map.draw(chart_with_mutil_select_description["get_show_data"](), null,
-            "{0}->{1}<br/>商品：{2}", "flow")
+            "{0}->{1}<br/>商品：{2}", "flow","{0}年-商品生成数量:{1}份")
     }
     
     function draw_chord() {
@@ -592,7 +592,8 @@ $(function () {
         chart_line && chart_line.draw(data_types_description[data_type].time_arr
             , data_types_description[data_type].time_map
             , data_types_description[data_type].chart_line_tip,
-            data_types_description[data_type].chart_line_title
+            data_types_description[data_type].chart_line_title,
+            true,true
             );
         chart_line && chart_line.set_data_point_state(get_chart_line_point_check_box_state());
     }

@@ -22,6 +22,67 @@ function ChinaMap(svg){
             return this._toolTip;
         }
     }
+    
+    function ShowDetailModal(div, id) {
+        var _id = null,
+            _header_title = null,
+            _header_close_btn = null,
+            _body_div = null,
+            _footer_div = null;
+
+        this.getId = function () {
+            return _id;
+        }
+
+        this.setHeaderTitle = function(str){
+            if(!_header_title)return;
+            _header_title.text(str);
+        }
+
+        this.getBodyDiv = function () {
+            return _body_div;
+        }
+
+        function init() {
+            if(!div)return;
+            _id = id || "showDetailModal";
+            div.attr("class","modal fade")
+                .attr("id",id)
+                .attr("tabindex",-1)
+                .attr("role","dialog")
+                .attr("ara-labelledby","tipModalLabel")
+                .attr("aria-hidden",true)
+            var dialog_div = div.append("div")
+                .attr("class","modal-dialog")
+
+            var content_div = dialog_div.append("div")
+                .attr("class","modal-content")
+
+            var header_div = content_div.append("div")
+                .attr("class","modal-header")
+            _header_title = header_div.append("h4")
+                .attr("class","modal-title")
+                .attr("id","tipModalLabel")
+            // _header_close_btn = header_div.append("button")
+            //     .attr("type","button")
+            //     .attr("class","close")
+            //     .attr("data-dismiss","modal")
+            //     .attr("aria-hidden",true)
+
+            _body_div = content_div.append("div")
+                .attr("class","modal-body")
+
+            // _footer_div = content_div.append("div")
+            //     .attr("class","modal-footer")
+            // var footer_close_btn = header_div.append("button")
+            //     .attr("type","button")
+            //     .attr("class","btn btn-default")
+            //     .attr("data-dismiss","modal")
+            //     .text("关闭")
+        }
+
+        init();
+    }
 
     var origin_properties = {
         "stroke" : "black",
@@ -76,7 +137,10 @@ function ChinaMap(svg){
         _height = height-_margin.top-_margin.bottom;
     var _main_china_json_features = null;
     // 小贴士
-    var _tooltip = new ToolTip()
+    var _tooltip = new ToolTip();
+    // 详情展示
+    var _detailDialog = new ShowDetailModal(d3.select("body").append("div"),"chinaMapDetailDialog")
+
     // interval_id
     var _interval_ids = [];
 
@@ -89,7 +153,7 @@ function ChinaMap(svg){
     // 地图坐标投影
     var projection = d3.geoMercator()
         .center([107,31])
-        .scale(600)
+        .scale(_width*3/4)
         .translate([width/2,height*5/8]);
     // // 平移量、缩放量初始值
     // var initTran = projection.translate();
@@ -228,8 +292,9 @@ function ChinaMap(svg){
             .style("display","none");
     }
 
-    function draw_flow(context,data,data_map,formatStr,ele_type) {
+    function draw_flow(context,data,data_map,formatStr,ele_type,detailFormatStr) {
         ele_type = ele_type || "line";
+        detailFormatStr = detailFormatStr || "{0}-{1}"
         // console.log(arguments);
         var _this=context;
         // console.log("provinces_coordinates",provinces_coordinates)
@@ -257,6 +322,88 @@ function ChinaMap(svg){
                 ele_type = ele_type || "line";
                 function sub_default_set(ele) {
                     ele
+                        .on("click",function (d) {
+                            _detailDialog.setHeaderTitle(d[0][0]+"->"+d[0][1])
+                            var body = _detailDialog.getBodyDiv();
+                            var update = body.selectAll("h5.total")
+                                .data([d[2]])
+                            default_set_total_title(update)
+                            default_set_total_title(update.enter().append("h5"));
+                            update.exit().remove();
+                            function default_set_total_title(ele){
+                                if(!ele)return;
+                                ele.attr("class","total")
+                                    .text(function(d){return "总数:"+d});
+                            }
+
+                            update = body.selectAll("div.div-detail")
+                                .data(Object.keys(d[1]))
+                            default_set_detail(update)
+                            default_set_detail(update.enter().append("div"))
+                            update.exit().remove();
+                            function default_set_detail(ele) {
+                                if(!ele || ele.empty())return;
+                                ele.attr("class","div-detail")
+                                var update = ele.selectAll("h6.detail-title")
+                                    .data(function(key){return [key];})
+                                default_set_detail_title(update);
+                                default_set_detail_title(update.enter().append("h6"))
+                                update.exit().remove();
+                                function default_set_detail_title(ele) {
+                                    if(!ele)return;
+                                    ele.attr("class","detail-title")
+                                        .text(function(key){
+                                            var sum = d3.sum(d[1][key],function(value){return value[1];});
+                                            return key+"("+sum+"份)";});
+                                }
+                                ele.selectAll("svg.detail-chart").remove();
+                                var chart_update = ele.selectAll("svg.detail-chart")
+                                    .data(function(key){return [key];});
+                                default_set_detail_chart(chart_update);
+                                default_set_detail_chart(chart_update.enter().append("svg"))
+                                chart_update.exit().remove();
+                                function default_set_detail_chart(ele){
+                                    if(!ele || ele.empty())return;
+                                    ele.attr("width",400).attr("height",300)
+                                        .attr("class","detail-chart")
+                                        .each(function (key) {
+                                            var chart = new ChartLine(d3.select(this),false);
+                                            var data_set = d[1][key].slice(0);
+                                            chart.draw(data_set.sort(function(a,b){return d3.ascending(+a[0],+b[0]);})
+                                                ,null,detailFormatStr,{xAxis:"时间/年",yAxis:"数量/份"},true,false);
+                                        })
+                                }
+                                // var ul_update = ele.selectAll("ul")
+                                //     .data(function (key) {
+                                //         console.log("ul",key);
+                                //         return [key];
+                                //     })
+                                // default_set_ul(ul_update);
+                                // default_set_ul(ul_update.enter().append("ul"));
+                                // ul_update.exit().remove();
+                                // function default_set_ul(ele) {
+                                //     if(!ele)return;
+                                //     ele.attr("class","list-group")
+                                //     update = ele.selectAll("li")
+                                //         .data(function (key) {
+                                //             console.log("li",d,key)
+                                //             return d[1][key];
+                                //         })
+                                //     default_set_li(update)
+                                //     default_set_li(update.enter().append("li"))
+                                //     update.exit().remove();
+                                //     function default_set_li(ele) {
+                                //         if(!ele)return;
+                                //         ele.attr("class","list-group-item")
+                                //             .text(function (d) {
+                                //                 return d[0]+"年-----"+d[1];
+                                //             })
+                                //     }
+                                // }
+                            }
+                        })
+                        .attr("data-toggle","modal")
+                        .attr("data-target","#"+_detailDialog.getId())
                         .on('mouseover',function (d, i) {
                             // console.log("mouseover",this);
                             d3.select(this)
@@ -438,7 +585,7 @@ function ChinaMap(svg){
 
     var draw_type = {normal:draw_normal,flow:draw_flow}
 
-    this.draw = function (data, data_map, formatStr, type) {
+    this.draw = function (data, data_map, formatStr, type,detailFormatStr) {
         function clear_interval() {
             for(var i=0,len=_interval_ids.length;i<len;i++){
                 clearInterval(_interval_ids[i]);
@@ -449,7 +596,7 @@ function ChinaMap(svg){
         // console.log(type)
         var _this = this;
         clear_interval();
-        draw_type[type](_this,data,data_map,formatStr);
+        draw_type[type](_this,data,data_map,formatStr,"line",detailFormatStr);
     }
 
     this.init_tip_color_rect = function () {
@@ -519,6 +666,7 @@ function ChinaMap(svg){
                 return d3.select(this).html() + xmlDocument.getElementsByTagName("g")[0].outerHTML;
             })
             d3.select("#southsea")
+                .attr("width",_width/8)
                 .attr("transform","translate("+(width*3/4)+","+(height*4/5)+")scale(0.5)")
                 .attr("class","south-china-sea");
         });

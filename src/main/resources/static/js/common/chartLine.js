@@ -1,8 +1,8 @@
-function ChartLine(svg){
+function ChartLine(svg,timeScale){
     var _svg = svg,
         width = _svg.attr("width"),
         height = _svg.attr("height"),
-        _margin = {top:20,right:40,bottom:30,left:50},
+        _margin = {top:30,right:50,bottom:50,left:50},
         _width = width - _margin.left-_margin.right,
         _height = height-_margin.top-_margin.bottom,
         _color = d3.scaleOrdinal(d3.schemeCategory20);
@@ -28,12 +28,17 @@ function ChartLine(svg){
         _area_color = null;
 
     this.init = function(){
-        _xScale = d3.scaleTime().range([0,_width]);
+        if(timeScale)
+            _xScale = d3.scaleTime().range([0,_width]);
+        else
+            _xScale = d3.scaleLinear().range([0,_width]);
         _yScale = d3.scaleLinear().range([_height,0]);
         // 定义坐标轴
         _xAxis = d3.axisBottom(_xScale)
+        if(!timeScale)
+            _xAxis.tickFormat(d3.format("d"));
         _yAxis = d3.axisLeft(_yScale)
-            // .tickFormat(d3.format("d"));
+            .tickFormat(d3.format("d"));
         _svg.append("defs").append("clipPath")
             .attr("id", "clip")
             .append("rect")
@@ -50,9 +55,9 @@ function ChartLine(svg){
             });
         _area_gen = d3.area()
             .curve(d3.curveMonotoneX)
-            .x(function(d) { return _xScale(d[0]); })
+            .x(function(d) { return _xScale(+d[0]); })
             .y0(_height)
-            .y1(function(d) { return _yScale(d[1]); });
+            .y1(function(d) { return _yScale(+d[1]); });
 
         // 缩放控制器
         _zoom = d3.zoom()
@@ -62,7 +67,7 @@ function ChartLine(svg){
             .on("zoom", zoomed);
 
         _main_g = _svg.append("g")
-            .attr("class","main-g")
+            .attr("class","line-main-g")
             .attr("transform","translate("+_margin.left+","+_margin.top+")")
 
         _gxAxis = _main_g.append("g")
@@ -78,6 +83,7 @@ function ChartLine(svg){
             .call(_yAxis);
         _yAxisTitle = _main_g.append("text")
             .attr("class","axis-title")
+            .attr("transform","translate("+(-_margin.left)+","+(-_margin.top/2)+")")
 
         _main_g.append("path")
             .attr("class","data-line clip_path")
@@ -88,32 +94,26 @@ function ChartLine(svg){
         init_axis_tip()
     }
 
-    this.draw = function (data_set, data_map,formatStr,chart_line_title) {
+    this.draw = function (data_set, data_map,formatStr,chart_line_title,draw_point,zoom) {
         chart_line_title = chart_line_title || {xAxis:"",yAxis:""};
         chart_line_title["xAxis"] = chart_line_title["xAxis"] || "";
         chart_line_title["yAxis"] = chart_line_title["yAxis"] || "";
-        if(!data_set || !data_map)
+        if(!data_set)
             return;
         var y_max = d3.max(data_set,function(d){return d[1];}) || 25;
         _xScale
             .domain(d3.extent(data_set,function(d){return d[0];}));
         _yScale
             .domain([0,y_max+1]);
-
         _zoomXScale = _xScale;
         draw_data_line(data_set);
-        draw_data_point(data_set);
-        draw_axis(chart_line_title);
+        if(draw_point)
+            draw_data_point(data_set);
+        draw_axis(chart_line_title,data_set.length);
 
-        var d0 = d3.quantile(data_set,0.25,function(d){return d[0].getTime()}),
-            d1 = d3.quantile(data_set,0.75,function(d){return d[0].getTime()});
         // Gratuitous intro zoom!
-        _svg.call(_zoom)
-            // .transition()
-            // .duration(1500)
-            // .call(_zoom.transform, d3.zoomIdentity
-            //     .scale(width / (_xScale(d1) - _xScale(d0)))
-            //     .translate(-_xScale(d0), 0));
+        if(zoom)
+            _svg.call(_zoom)
         // draw_grid(_xScale);
         _mouseRect.on("mousemove",function () {
             // 获取鼠标相对透明矩形左上角的坐标，左上角坐标为(0,0)
@@ -164,7 +164,9 @@ function ChartLine(svg){
                 // })
                 // .transition()
                 // .duration(1000)
-                .attr("d",gen)
+                .attr("d",function (d) {
+                    return gen(d);
+                })
         }
 
         var update = _main_g.select("path.data-line")
@@ -176,11 +178,20 @@ function ChartLine(svg){
         default_set(enter.append("path"),_area_gen);
         default_set(update,_area_gen);
     }
+    
+    function rotate_text_label(ele) {
+        return ele.attr("transform","rotate(30)")
+            .style("text-anchor", "start");
+    }
 
-    function draw_axis(chart_line_title) {
+    function draw_axis(chart_line_title,xTicks) {
+        if(!timeScale)
+            _xScale.ticks(xTicks);
         _gxAxis.transition()
             .duration(1000)
-            .call(_xAxis);
+            .call(_xAxis)
+            .selectAll("text")
+            .call(rotate_text_label)
         _xAxisTitle.text(chart_line_title["xAxis"]);
 
         _gyAxis.transition()
@@ -195,9 +206,14 @@ function ChartLine(svg){
         _area_gen.x(function(d) {return xt(d[0]);})
         _zoomXScale = xt;
         // draw_grid(xt);
+        if(_main_g.attr("class")!="line-main-g")
+            return;
         _main_g.selectAll(".data-point").attr("cx",function(d){return _zoomXScale(d[0]);})
-        _main_g.select(".data-line").attr("d",_area_gen);
+        _main_g.selectAll(".data-line").attr("d",function (d) {
+            return _area_gen(d);
+        });
         _main_g.select(".axis--x").call(_xAxis.scale(xt));
+        rotate_text_label(_gxAxis.selectAll("text"))
     }
 
     function draw_grid(xScale) {
@@ -301,12 +317,15 @@ function ChartLine(svg){
                 return _width/2-focusX;
             })
             .attr("dy",function () {
-                return _margin.top-focusY;
+                return _margin.top/2-focusY;
             })
         // console.log(typeof formatStr == "string");
         if(typeof formatStr == "string"){
             // console.log(formatStr.format(x1,y1))
-            temp_text.text(formatStr.format(x1.getFullYear(),x1.getMonth()+1,y1));
+            if(timeScale)
+                temp_text.text(formatStr.format(x1.getFullYear(),x1.getMonth()+1,y1));
+            else
+                temp_text.text(formatStr.format(x1,y1));
         }
 
         // 设置垂直对齐线的起点和终点

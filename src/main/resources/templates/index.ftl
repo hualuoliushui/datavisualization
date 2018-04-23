@@ -121,8 +121,8 @@
 <script src="/js/common/province_coordinates.js"></script>
 <script src="/js/common/util.js"></script>
 <script src="/js/common/pie.js"></script>
-<script src="/js/common/chinaMap.js"></script>
 <script src="/js/common/chartLine.js"></script>
+<script src="/js/common/chinaMap.js"></script>
 <script src="/js/common/chartChord.js"></script>
 <script src="/js/common/chartTree.js"></script>
 
