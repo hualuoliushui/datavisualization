@@ -1,21 +1,82 @@
 var dataSourceApp = angular.module('dataSourceApp',[]);
 var recordsMap = {}
 
-dataSourceApp.controller('dataSourceController',function ($scope, $http,$interval,$timeout) {
-    $scope.curDataSourceId = 0;
-    // 初始化数据源及其记录
-    setDataSources($scope,$http,$timeout);
-    // 设置开始统计事件监听
-    setStartCollecting($scope,$http,$interval,$timeout);
-    // 设置删除数据源事件监听
-    setDeleteDataSource($scope,$http,$timeout);
-    // 设置添加数据源事件监听
-    setAddDataSource($scope,$http,$timeout);
-    // 设置更改当前显示的记录事件监听
-    setViewRecords($scope);
-    // 设置删除记录事件监听
-    setDeleteRecord($scope,$http,$timeout);
-})
+dataSourceApp
+    .controller('dataSourceController',function ($scope, $http,$interval,$timeout) {
+        $scope.curDataSourceId = 0;
+        $scope.initNewDataSource={
+            host:"localhost"
+            ,port:80
+        }
+        $scope.newDataSource={
+            host:"localhost"
+            ,port:80
+        }
+        // 初始化数据源及其记录
+        setDataSources($scope,$http,$timeout);
+        // 设置开始统计事件监听
+        setStartCollecting($scope,$http,$interval,$timeout);
+        // 设置删除数据源事件监听
+        setDeleteDataSource($scope,$http,$timeout);
+        // 设置添加数据源事件监听
+        setAddDataSource($scope,$http,$timeout);
+        // 设置更改当前显示的记录事件监听
+        setViewRecords($scope);
+        // 设置删除记录事件监听
+        setDeleteRecord($scope,$http,$timeout);
+    })
+    .directive("validHost",function () {
+        return {
+            require:'ngModel',//缺失的话，ctrl参数会未定义
+            restrict:"EA",
+            link:function (scope,ele,attrs,ctrl) {
+                var target = attrs["validHost"];//获取自定义指令属性键值
+                if (target) {//判断键是否存在
+                    // scope.$watch(target, function () {//存在启动监听其值
+                    //     ctrl.$validate()//每次改变手动调用验证
+                    // }) // 似乎不需要手动调用，不知道在何处已经调用了一次
+
+                    ctrl.$validators.validHost = function (modelValue, viewValue) {//自定义验证器内容
+                        var domain_regex = new RegExp("[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\\.?")
+                        var ip_regx = new RegExp("((25[0-5])|(2[0-4]\\d)|(1\\d\\d)|([1-9]\\d)|\\d)(\\.((25[0-5])|(2[0-4]\\d)|(1\\d\\d)|([1-9]\\d)|\\d)){3}")
+                        var localhost_regex = new RegExp("localhost")
+                        if(domain_regex.test(modelValue) || ip_regx.test(modelValue) || localhost_regex.test(modelValue))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                    }
+                }
+            }
+        }
+    })
+    .directive("validPort",function () {
+        return {
+            require:'ngModel',//缺失的话，ctrl参数会未定义
+            restrict:"EA",
+            link:function (scope,ele,attrs,ctrl) {
+                var target = attrs["validPort"];//获取自定义指令属性键值
+                if (target) {//判断键是否存在
+                    ctrl.$validators.validPort = function (modelValue, viewValue) {//自定义验证器内容
+                        if(modelValue>0)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                    }
+                }
+            }
+        }
+    })
+
 // 显示操作状态信息
 function deal_msg($scope,obj,type,$timeout) {
     var msg = '';
@@ -184,13 +245,17 @@ function setDeleteRecord($scope,$http,$timeout) {
 }
 
 function setAddDataSource($scope, $http, $timeout) {
-    $scope.addDataSource = function (context) {
-        var host = $("#host").val() || $("#host").attr("placeholder");
-        var port = $("#port").val() || $("#port").attr("placeholder");
-        var data = {
-            host: host,
-            port: port
+    function checkInitNewDataSource() {
+        if(!$scope.newDataSource.host || !$scope.newDataSource.host.length
+            || !$scope.newDataSource || !$scope.newDataSource.port){
+            $scope.newDataSource.host=$scope.initNewDataSource.host;
+            $scope.newDataSource.port=$scope.initNewDataSource.port;
+            return true;
         }
+    }
+    $scope.addDataSource = function (context) {
+        checkInitNewDataSource();
+        var data = $scope.newDataSource;
         $http({
             method:'POST',
             url:'/statistic/addDataSource',

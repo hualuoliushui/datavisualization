@@ -9,6 +9,8 @@ import com.gss.datavisualization.returnentity.RecordWithDataSource;
 import com.gss.datavisualization.util.DateUtil;
 import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -87,6 +89,7 @@ public class StatisticService {
         return ResultUtil.resultGoodReturner();
     }
 
+    @CacheEvict(key="#p0")
     public Result deleteRecord(int record_id){
         return ResultUtil.resultGoodReturner(recordMapper.updateDeleted(record_id,EntryState.DELETED));
     }

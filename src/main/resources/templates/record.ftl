@@ -93,22 +93,25 @@
 <!-- 模态框（Modal） -->
 <div class="modal fade" id="addDataSourceModal" tabindex="-1" role="dialog" aria-labelledby="tipModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" name="newDataSource">
             <div class="modal-header">
                 <h4 class="modal-title" id="tipModalLabel">添加数据源</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             </div>
             <div class="modal-body">
                 <label >主机地址</label>
-                <input type="text" name="host" id="host" placeholder="localhost" required>
-                {{host}}
+                <input type="text" ng-model="newDataSource.host" valid-host="newDataSource.host" placeholder="{{initNewDataSource.host}}">
                 <label >端口号</label>
-                <input type="number" name="port" id="port" placeholder="80" required>
-                {{port}}
+                <input type="number" ng-model="newDataSource.port" valid-port="newDataSource.port" placeholder="{{initNewDataSource.port}}">
+                <br/>
+                <span style="color: red" ng-show="!newDataSource.host">非法的主机地址!</span>
+                <span style="color: red" ng-show="!newDataSource.port">非法的端口号!</span>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="makeSure" ng-click="addDataSource(this)">提交</button>
+                <button type="button" class="btn btn-primary" id="makeSure"
+                        ng-show="newDataSource.host && newDataSource.port"
+                        ng-click="addDataSource(this)">提交</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
