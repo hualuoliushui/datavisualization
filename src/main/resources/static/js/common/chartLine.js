@@ -126,15 +126,16 @@ function ChartLine(svg,timeScale){
     }
 
     function draw_data_point(data_set) {
-        var r_max = 10;
-        var y_max = d3.max(data_set,function(d){return d[1];}) || 10;
+        var r_max = 2;
         function default_set(ele) {
             if(!ele)return;
             ele.attr("class","data-point clip_path")
-                .attr("r",function(d){return d[1]/y_max*r_max})
+                .attr("r",function(d){return r_max})
                 .attr("cx",function(d){return _xScale(d[0]);})
                 .attr("cy",function(d){return _yScale(d[1]);})
-                .attr("fill",function(d,i){return _color(i);})
+                .attr("fill","white")
+                .attr("stroke-width",1)
+                .attr("stroke","black")
         }
         var update = _main_g.selectAll("circle.clip_path")
             .data(data_set);
@@ -175,8 +176,9 @@ function ChartLine(svg,timeScale){
         var exit = update.exit();
 
         exit.remove();
-        default_set(enter.append("path"),_area_gen);
-        default_set(update,_area_gen);
+        var gen = _area_gen;
+        default_set(enter.append("path"),gen);
+        default_set(update,gen);
     }
     
     function rotate_text_label(ele) {

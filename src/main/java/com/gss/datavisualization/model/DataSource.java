@@ -10,6 +10,15 @@ public class DataSource {
     private int port;
     private String createTime;
     private int deleted;
+    private int userId;
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     @Override
     public String toString() {
@@ -19,6 +28,7 @@ public class DataSource {
                 ", port=" + port +
                 ", createTime='" + createTime + '\'' +
                 ", deleted=" + deleted +
+                ", userId=" + userId +
                 '}';
     }
 

@@ -7,12 +7,19 @@
     <meta name="author" content="">
     <title>管理</title>
     <script src="/js/lib/angular/angular.js"></script>
+    <script src="/js/lib/angular/angular-cookies.min.js"></script>
     <link href="/js/lib/bootstrap/css/bootstrap.css" rel="stylesheet"/>
     <link href="/css/page/record.css" rel="stylesheet"/>
 </head>
 <body ng-app="dataSourceApp" ng-controller="dataSourceController">
 <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">数据源及数据记录管理</a>
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="#" ng-model="user">用户：{{user.userName}}</a>
+            <a href="/user/dealLogOut">注销</a>
+        </li>
+    </ul>
     <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
             <a class="nav-link" href="/">统计结果分析</a>

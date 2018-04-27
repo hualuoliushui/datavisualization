@@ -89,7 +89,6 @@ public class StatisticService {
         return ResultUtil.resultGoodReturner();
     }
 
-    @CacheEvict(key="#p0")
     public Result deleteRecord(int record_id){
         return ResultUtil.resultGoodReturner(recordMapper.updateDeleted(record_id,EntryState.DELETED));
     }

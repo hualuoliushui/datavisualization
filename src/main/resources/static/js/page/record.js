@@ -1,15 +1,18 @@
-var dataSourceApp = angular.module('dataSourceApp',[]);
+var dataSourceApp = angular.module('dataSourceApp',['ngCookies']);
 var recordsMap = {}
 
 dataSourceApp
-    .controller('dataSourceController',function ($scope, $http,$interval,$timeout) {
+    .controller('dataSourceController',function ($cookieStore,$scope, $http,$interval,$timeout) {
         $scope.curDataSourceId = 0;
+        $scope.user=$cookieStore.get("user");
         $scope.initNewDataSource={
-            host:"localhost"
+            userId:$scope.user.id
+            ,host:"localhost"
             ,port:80
         }
         $scope.newDataSource={
-            host:"localhost"
+            userId:$scope.user.id
+            ,host:"localhost"
             ,port:80
         }
         // 初始化数据源及其记录
@@ -30,6 +33,7 @@ dataSourceApp
             require:'ngModel',//缺失的话，ctrl参数会未定义
             restrict:"EA",
             link:function (scope,ele,attrs,ctrl) {
+                console.log("valid")
                 var target = attrs["validHost"];//获取自定义指令属性键值
                 if (target) {//判断键是否存在
                     // scope.$watch(target, function () {//存在启动监听其值

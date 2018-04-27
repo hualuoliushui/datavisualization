@@ -1,13 +1,17 @@
 package com.gss.datavisualization.controller;
 
+import com.gss.datavisualization.entity.Result;
 import com.gss.datavisualization.service.StatisticService;
+import com.gss.datavisualization.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -18,6 +22,8 @@ import java.util.Map;
 public class IndexController {
     @Autowired
     StatisticService statisticService;
+    @Autowired
+    UserService userService;
 
     @RequestMapping(value = "/",method = RequestMethod.GET)
     public Object index(Map<String,Object> map,
@@ -28,14 +34,12 @@ public class IndexController {
     }
 
     @RequestMapping(value = "record",method = RequestMethod.GET)
-    public Object record(Map<String,Object> map){
+    public Object record(HttpServletRequest request,
+                         Map<String, Object> map){
+        Result result = userService.checkLogin(request);
+        if(result.getErrCode()!=0){
+            return new ModelAndView("/user/login");
+        }
         return "record";
     }
-
-    @RequestMapping(value="testJson",method = RequestMethod.GET)
-    @ResponseBody
-    public Object testJson(){
-        int ret[]= {1,2,3,4,5};
-        return ret;
-    };
 }
