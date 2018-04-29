@@ -33,6 +33,8 @@ public class StatisticService {
     GoodDetailMapper goodDetailMapper;
     @Autowired
     DataSourceMapper dataSourceMapper;
+    @Autowired
+    DataCollectionService dataCollectionService;
 
     public Result getRecords(int data_source_id, int record_id){
         List<RecordWithDataSource> recordWithDataSources = null;
@@ -67,6 +69,8 @@ public class StatisticService {
     }
 
     public Result getNumOfData(int recordId){
+        List list = recordMapper.getRecordsWithDataSourceByRecordId(recordId);
+        if(list==null) return ResultUtil.resultBadReturner("该记录不存在");
         return ResultUtil.resultGoodReturner(merchantDetailMapper.getTotal_getMerchantDetails(recordId));
     }
 
@@ -84,6 +88,9 @@ public class StatisticService {
     }
 
     public Result deleteDataSource(int data_source_id){
+        if(dataCollectionService.isCompleted(data_source_id).getMsg().equals("false")){
+            return ResultUtil.resultBadReturner("统计中，请稍后重试");
+        }
         dataSourceMapper.updateDeleted(data_source_id, EntryState.DELETED);
         recordMapper.updateDeletedWithDataSource(data_source_id,EntryState.DELETED);
         return ResultUtil.resultGoodReturner();

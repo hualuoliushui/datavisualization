@@ -35,8 +35,8 @@ function ChartLine(svg,timeScale){
         _yScale = d3.scaleLinear().range([_height,0]);
         // 定义坐标轴
         _xAxis = d3.axisBottom(_xScale)
-        if(!timeScale)
-            _xAxis.tickFormat(d3.format("d"));
+        // if(!timeScale)
+        //     _xAxis.tickFormat(d3.format("d"));
         _yAxis = d3.axisLeft(_yScale)
             .tickFormat(d3.format("d"));
         _svg.append("defs").append("clipPath")

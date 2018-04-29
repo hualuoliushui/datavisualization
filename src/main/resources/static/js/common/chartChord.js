@@ -44,6 +44,8 @@ function ChartChord(svg) {
         _node_names = [],
         _tool_tip = null;
         _this = this;
+    // 详情展示
+    var _detailDialog = new util.ShowDetailModal(d3.select("body").append("div"),"chordDetailDialog")
 
     var _formatValue = null,
         _chord = null,
@@ -189,7 +191,12 @@ function ChartChord(svg) {
                 .on("mousemove",function (d, i) {
                     _tool_tip.mouse_move(d3.event,d,i);
                 })
-                .on("mouseout",fade(1.0));
+                .on("mouseout",fade(1.0))
+                // .attr("data-toggle","modal")
+                // .attr("data-target","#"+_detailDialog.getId())
+                // .on("click",function (d,i) {
+                //     console.log(d,i);
+                // });
         }
 
 

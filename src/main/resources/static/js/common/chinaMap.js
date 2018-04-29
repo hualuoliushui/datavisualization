@@ -22,67 +22,6 @@ function ChinaMap(svg){
             return this._toolTip;
         }
     }
-    
-    function ShowDetailModal(div, id) {
-        var _id = null,
-            _header_title = null,
-            _header_close_btn = null,
-            _body_div = null,
-            _footer_div = null;
-
-        this.getId = function () {
-            return _id;
-        }
-
-        this.setHeaderTitle = function(str){
-            if(!_header_title)return;
-            _header_title.text(str);
-        }
-
-        this.getBodyDiv = function () {
-            return _body_div;
-        }
-
-        function init() {
-            if(!div)return;
-            _id = id || "showDetailModal";
-            div.attr("class","modal fade")
-                .attr("id",id)
-                .attr("tabindex",-1)
-                .attr("role","dialog")
-                .attr("ara-labelledby","tipModalLabel")
-                .attr("aria-hidden",true)
-            var dialog_div = div.append("div")
-                .attr("class","modal-dialog")
-
-            var content_div = dialog_div.append("div")
-                .attr("class","modal-content")
-
-            var header_div = content_div.append("div")
-                .attr("class","modal-header")
-            _header_title = header_div.append("h4")
-                .attr("class","modal-title")
-                .attr("id","tipModalLabel")
-            // _header_close_btn = header_div.append("button")
-            //     .attr("type","button")
-            //     .attr("class","close")
-            //     .attr("data-dismiss","modal")
-            //     .attr("aria-hidden",true)
-
-            _body_div = content_div.append("div")
-                .attr("class","modal-body")
-
-            // _footer_div = content_div.append("div")
-            //     .attr("class","modal-footer")
-            // var footer_close_btn = header_div.append("button")
-            //     .attr("type","button")
-            //     .attr("class","btn btn-default")
-            //     .attr("data-dismiss","modal")
-            //     .text("关闭")
-        }
-
-        init();
-    }
 
     var origin_properties = {
         "stroke" : "black",
@@ -103,7 +42,15 @@ function ChinaMap(svg){
             .attr("viewBox","0 0 12 12")
             .attr("refX","6")
             .attr("refY","6")
-            .attr("orient","auto");
+            .attr("orient","auto")
+            .on("mouseover",function(){
+                d3.select(this)
+                    .style("display","none");
+            })
+            .on("mouseout",function(){
+                d3.select(this)
+                    .style("display",null);
+            });
         var arrow_path = "M2,2 L10,6 L2,10 L6,6 L2,2";
         arrowMarker.append("path")
             .attr("d",arrow_path)
@@ -135,11 +82,12 @@ function ChinaMap(svg){
         _margin = {left:30,right:30,top:30,bottom:30},
         _width = width-_margin.left-_margin.right,
         _height = height-_margin.top-_margin.bottom;
-    var _main_china_json_features = null;
+    var _main_china_json_features = null,
+        _start_point_color_map = new Map();
     // 小贴士
     var _tooltip = new ToolTip();
     // 详情展示
-    var _detailDialog = new ShowDetailModal(d3.select("body").append("div"),"chinaMapDetailDialog")
+    var _detailDialog = new util.ShowDetailModal(d3.select("body").append("div"),"chinaMapDetailDialog")
 
     // interval_id
     var _interval_ids = [];
@@ -162,7 +110,7 @@ function ChinaMap(svg){
     var path = d3.geoPath(projection)
 
     // 颜色
-    var color = d3.scaleOrdinal(d3.schemeCategory20b);
+    var color = d3.scaleOrdinal(d3.schemeCategory20);
     var color_start =d3.rgb(0,255,255);
     var color_end = d3.rgb(0,0,255);
     var computeColor = d3.interpolate(color_start,color_end);
@@ -180,6 +128,13 @@ function ChinaMap(svg){
     new MarkerArrow(defs,"arrow")
     // 起始圆点
     new MarkerPoint(defs,"startPoint")
+
+    function line_color_func(d,i) {
+        if(!_start_point_color_map.has(d[0][0])){
+            _start_point_color_map.set(d[0][0],color(i));
+        }
+        return _start_point_color_map.get(d[0][0]);
+    }
 
     // var pekingToGuilin = {
     //     type:"LineString",
@@ -321,7 +276,19 @@ function ChinaMap(svg){
             function default_set(operator,ele,ele_type) {
                 ele_type = ele_type || "line";
                 function sub_default_set(ele) {
+                    function fade(opacity) {
+                        return function (g_d, i) {
+                            d3.selectAll(".flow-line")
+                                .filter(function (d) {
+                                    return g_d[0][0]!=d[0][0];// || g_d[0][1]!=d[0][1];
+                                })
+                                .transition()
+                                .duration(duration_time/2)
+                                .style("opacity",opacity);
+                        }
+                    }
                     ele
+                        .attr("class","flow-line")
                         .on("click",function (d) {
                             _detailDialog.setHeaderTitle(d[0][0]+"->"+d[0][1])
                             var body = _detailDialog.getBodyDiv();
@@ -407,21 +374,24 @@ function ChinaMap(svg){
                         .on('mouseover',function (d, i) {
                             // console.log("mouseover",this);
                             d3.select(this)
-                                .attr("stroke",'yellow')
+                                // .attr("stroke",'yellow')
                                 .attr("stroke-width",5)
                             _tooltip.mouse_over(d3.event,d,i);
+                            fade(0.0)(d,i);
                         })
                         .on('mousemove',function (d, i) {
                             _tooltip.mouse_move(d3.event,d,i);
                         })
                         .on('mouseout',function (d, i) {
                             d3.select(this)
-                                .attr("stroke",origin_properties["stroke"])
+                                .attr("stroke",line_color_func)
                                 .attr("stroke-width",origin_properties["stroke-width"])
                             _tooltip.mouse_out(d3.event,d,i);
+                            fade(1.0)(d,i);
                         })
                         .attr("marker-end","url(#arrow)")
-                        .attr("marker-start","url(#startPoint)");
+                        .attr("marker-start","url(#startPoint)")
+                        .attr("stroke",line_color_func)
                 }
                 function default_animation(ele,duration_time,ele_type,operator){
                     // console.log(arguments);
@@ -481,7 +451,7 @@ function ChinaMap(svg){
                                 })
                         }
                         ele
-                            .attr("stroke",origin_properties["stroke"])
+                            .attr("stroke",line_color_func)
                             .attr("stroke-width",origin_properties["stroke-width"])
                             .attr("x1",function (d) {
                                 var start_coord = provinces_coordinates[d[0][0]];
@@ -596,7 +566,7 @@ function ChinaMap(svg){
         // console.log(type)
         var _this = this;
         clear_interval();
-        draw_type[type](_this,data,data_map,formatStr,"line",detailFormatStr);
+        draw_type[type](_this,data,data_map,formatStr,"path",detailFormatStr);
     }
 
     this.init_tip_color_rect = function () {

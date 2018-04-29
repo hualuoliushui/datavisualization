@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 public interface UserMapper {
     String tableName = "user_t";
 
-    @Insert("insert into " + tableName + "(create_time,user_name,psw) " +
+    @Insert("insert into " + tableName + "(createTime,userName,psw) " +
             "values(#{createTime},#{userName},#{psw})")
     @Options(useGeneratedKeys=true,keyColumn = "id")
     int insert(User user);
 
-    @Select("select * from " + tableName + " where user_name=#{userName} and psw=#{psw}")
+    @Select("select * from " + tableName + " where userName=#{userName} and psw=#{psw}")
     User find(User user);
 
-    @Select("select * from " + tableName + " where user_name=#{userName} ")
+    @Select("select * from " + tableName + " where userName=#{userName} ")
     User checkUnique(@Param("userName")String userName);
 }

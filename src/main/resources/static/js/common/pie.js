@@ -5,7 +5,8 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
     var height = +_svg.attr("height");
     var _margin = {left:30,right:30,top:30,bottom:30};
     var _width = width-_margin.left-_margin.right;
-    var _height = height -_margin.top-_margin.bottom;
+    var _height = height -_margin.top-_margin.bottom
+    var duration_time = 1000;
     var _drag_out_data_set = [];
     var _drag = d3.drag()
         .on("start",drag_start)
@@ -28,13 +29,15 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
     var pieCircle = {
         cx:_width/2,
         cy:_height/2,
-        r:0
+        r:d3.min([_width,_height])*0.5
     };
     var _color = d3.scaleOrdinal(d3.schemeCategory20);
     var _dataset=[]
     var _piedata=null;
     var _formatStr="{0}-{1}";
     var _getPercent=getPercentGen([]);
+    var _drag_out_circle = _main_g.append("circle");
+    var _drag_int_line = _main_g.append("line");
     lineTextValueOf = lineTextValueOf ? lineTextValueOf : function (d) {return d.data[0];};
     valueOf = valueOf ? valueOf : function (d) {return d[1];};
 
@@ -71,16 +74,24 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
 
     }
 
+    var drag_out_circle_r = pieCircle.r/2;
+
     function drag_move(d) {
         d.dx+=d3.event.dx;
         d.dy+=d3.event.dy;
         d3.select(this)
             .attr("transform","translate("+(d.dx+pieCircle.cx)+","+(d.dy+pieCircle.cy)+")");
+        _drag_out_circle.attr("r",drag_out_circle_r)
+            .attr("cx",pieCircle.cx)
+            .attr("cy",pieCircle.cy)
+            .attr("fill","none")
+            .attr("stroke","red")
+            .style("display",null)
     }
 
     function drag_end(d,i) {
         var dis2 = d.dx*d.dx+d.dy*d.dy;
-        if(dis2 > pieCircle.r*pieCircle.r/4){
+        if(dis2 > drag_out_circle_r*drag_out_circle_r){
             var movedData = _dataset.splice(i,1)[0];
             var color = d3.select(this).select("path").attr("fill");
             d3.select(this).remove();
@@ -91,25 +102,39 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
             redraw(_dataset);
         }else{
             d3.select(this)
+                .transition()
+                .duration(duration_time)
+                .ease(d3.easeBounce,0.5)
                 .attr('transform',function(d){
                     d.dx=0,d.dy=0;
                     return "translate("+(pieCircle.cx)+","+(pieCircle.cy)+")"})
         }
+        _drag_out_circle.style("display","none");
     }
 
     function in_drag_start(d) {
 
     }
 
+    var drag_in_line_x = _width/4;
+
     function in_drag_move(d) {
         d.dx+=d3.event.dx;
         d.dy+=d3.event.dy;
         d3.select(this)
             .attr("transform","translate("+(d.dx)+","+(d.dy)+")");
+        _drag_int_line.style("display",null)
+            .attr("fill","red")
+            .attr('stroke-width',2)
+            .attr("stroke","red")
+            .attr("x1",drag_in_line_x)
+            .attr("y1",0)
+            .attr("x2",drag_in_line_x)
+            .attr("y2",_height)
     }
     
     function in_drag_end(d, i) {
-        if(d.dx>_width/4){
+        if(d.dx>drag_in_line_x){
             var movedData = _drag_out_data_set.splice(i,1)[0];
             _dataset.push(movedData);
             d3.select(this).remove();
@@ -120,8 +145,12 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
             d.dx=0;
             d.dy=0;
             d3.select(this)
+                .transition()
+                .duration(duration_time)
+                .ease(d3.easeBounce,0.5)
                 .attr("transform","translate("+(d.dx)+","+(d.dy)+")");
         }
+        _drag_int_line.style("display","none");
     }
     
     function update_drag_out_ele() {
@@ -324,7 +353,6 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
             }
         }
 
-        var duration_time = 1000;
         path.attr("fill",function (d, i) {
                 return d.color;
             })

@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="produce_date" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="life_time" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="qr_code_num" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="star_avg" type="{http://www.w3.org/2001/XMLSchema}double"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -46,7 +47,8 @@ import javax.xml.bind.annotation.XmlType;
     "goodNumber",
     "produceDate",
     "lifeTime",
-    "qrCodeNum"
+    "qrCodeNum",
+    "starAvg"
 })
 public class GoodDetail {
 
@@ -69,6 +71,8 @@ public class GoodDetail {
     protected int lifeTime;
     @XmlElement(name = "qr_code_num")
     protected int qrCodeNum;
+    @XmlElement(name = "star_avg")
+    protected double starAvg;
 
     /**
      * 获取id属性的值。
@@ -260,6 +264,22 @@ public class GoodDetail {
      */
     public void setQrCodeNum(int value) {
         this.qrCodeNum = value;
+    }
+
+    /**
+     * 获取starAvg属性的值。
+     * 
+     */
+    public double getStarAvg() {
+        return starAvg;
+    }
+
+    /**
+     * 设置starAvg属性的值。
+     * 
+     */
+    public void setStarAvg(double value) {
+        this.starAvg = value;
     }
 
 }

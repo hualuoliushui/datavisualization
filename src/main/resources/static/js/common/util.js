@@ -46,7 +46,68 @@
 
         return temp;
     }
+    function ShowDetailModal(div, id) {
+        var _id = null,
+            _header_title = null,
+            _header_close_btn = null,
+            _body_div = null,
+            _footer_div = null;
+
+        this.getId = function () {
+            return _id;
+        }
+
+        this.setHeaderTitle = function(str){
+            if(!_header_title)return;
+            _header_title.text(str);
+        }
+
+        this.getBodyDiv = function () {
+            return _body_div;
+        }
+
+        function init() {
+            if(!div)return;
+            _id = id || "showDetailModal";
+            div.attr("class","modal fade")
+                .attr("id",id)
+                .attr("tabindex",-1)
+                .attr("role","dialog")
+                .attr("ara-labelledby","tipModalLabel")
+                .attr("aria-hidden",true)
+            var dialog_div = div.append("div")
+                .attr("class","modal-dialog")
+
+            var content_div = dialog_div.append("div")
+                .attr("class","modal-content")
+
+            var header_div = content_div.append("div")
+                .attr("class","modal-header")
+            _header_title = header_div.append("h4")
+                .attr("class","modal-title")
+                .attr("id","tipModalLabel")
+            // _header_close_btn = header_div.append("button")
+            //     .attr("type","button")
+            //     .attr("class","close")
+            //     .attr("data-dismiss","modal")
+            //     .attr("aria-hidden",true)
+
+            _body_div = content_div.append("div")
+                .attr("class","modal-body")
+
+            // _footer_div = content_div.append("div")
+            //     .attr("class","modal-footer")
+            // var footer_close_btn = header_div.append("button")
+            //     .attr("type","button")
+            //     .attr("class","btn btn-default")
+            //     .attr("data-dismiss","modal")
+            //     .text("关闭")
+        }
+
+        init();
+    }
     exports.isContain = isContain;
     exports.removeItem = removeItem;
+    exports.ShowDetailModal = ShowDetailModal;
     Object.defineProperty(exports, '__esModule', { value: true });
 })));

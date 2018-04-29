@@ -30,6 +30,7 @@
                 <div class="form-group col-md-offset-9">
                     <button type="button" class="btn btn-success pull-right" name="login" ng-click="login()">登录</button>
                     <button type="button" class="btn btn-success pull-right" name="register" ng-click="switchFromModel()">注册</button>
+                    <a href="/" >首页</a>
                 </div>
             </div>
         </div>
@@ -55,6 +56,7 @@
                 <div class="form-group col-md-offset-9">
                     <button type="button" class="btn btn-success pull-right" name="login" ng-click="switchFromModel()">登录</button>
                     <button type="button" class="btn btn-success pull-right" name="register" ng-click="register()">注册</button>
+                    <a href="/" >首页</a>
                 </div>
             </div>
         </div>

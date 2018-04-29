@@ -16,7 +16,7 @@ import java.util.List;
 public interface DataSourceMapper {
     String tableName = "data_source_t";
 
-    @Insert("insert into " + tableName + "(host,port,create_time,deleted,user_id) " +
+    @Insert("insert into " + tableName + "(host,port,createTime,deleted,userId) " +
             "values(#{host},#{port},#{createTime},#{deleted},#{userId})")
     @Options(useGeneratedKeys=true,keyColumn = "id")
     int insertDataSource(DataSource dataSource);
