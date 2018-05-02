@@ -25,7 +25,7 @@ public interface MerchantDetailMapper {
     @Select("select count(*) " + sql_getMerchantDetails)
     int getTotal_getMerchantDetails(@Param("record_id")int record_id);
 
-    @Select("select record_id,merchant_id,create_date,company_area " + sql_getMerchantDetails + " limit #{limit} offset #{offset} ")
+    @Select("select * " + sql_getMerchantDetails + " limit #{limit} offset #{offset} ")
     @Results({
             @Result(column = "record_id",property = "recordId"),
             @Result(column = "merchant_id",property = "merchantId"),

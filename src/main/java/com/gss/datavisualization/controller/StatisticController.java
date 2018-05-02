@@ -1,7 +1,9 @@
 package com.gss.datavisualization.controller;
 
 import com.gss.datavisualization.model.DataSource;
+import com.gss.datavisualization.mongomodel.DealedData;
 import com.gss.datavisualization.service.DataCollectionService;
+import com.gss.datavisualization.service.DataService;
 import com.gss.datavisualization.service.StatisticService;
 import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ public class StatisticController {
     StatisticService statisticService;
     @Autowired
     DataCollectionService dataCollectionService;
+    @Autowired
+    DataService dataService;
 
     @RequestMapping(value = "/addDataSource",method = RequestMethod.POST, consumes="application/json")
     @ResponseBody
@@ -62,8 +66,8 @@ public class StatisticController {
 
     @RequestMapping(value="/getNumOfData",method = RequestMethod.GET)
     public Object getNumOfData(@RequestParam("recordId")int recordId){
-        return ResultUtil.resultGoodReturner(10);
-//        return statisticService.getNumOfData(recordId);
+//        return ResultUtil.resultGoodReturner(10);
+        return statisticService.getNumOfData(recordId);
     }
 
     @RequestMapping(value = "/getData",method = RequestMethod.GET)
@@ -91,5 +95,20 @@ public class StatisticController {
     @RequestMapping(value = "/deleteRecord",method = RequestMethod.GET)
     public Object deleteRecord(@RequestParam("recordId")int recordId){
         return statisticService.deleteRecord(recordId);
+    }
+
+    @RequestMapping(value = "/checkRecordExist",method = RequestMethod.GET)
+    public Object checkRecordExist(@RequestParam(value = "recordId")int recordId){
+        return dataService.checkRecordExist(recordId);
+    }
+
+    @RequestMapping(value = "/getDealedData",method = RequestMethod.GET)
+    public Object getDealedData(@RequestParam(value = "recordId")int recordId){
+        return dataService.getDealedData(recordId);
+    }
+
+    @RequestMapping(value="/uploadDealedData",method = RequestMethod.POST)
+    public Object uploadDealedData(@RequestBody DealedData dealedData){
+        return dataService.uploadDealedData(dealedData);
     }
 }

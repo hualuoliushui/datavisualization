@@ -26,7 +26,6 @@ $(function () {
 
     function request(url) {
         return new Promise(function (resolve, reject) {
-
             d3.json(url, function (error, response) {
                 if (error)
                     reject(error);
@@ -516,7 +515,7 @@ $(function () {
         }
     }
 
-    function deal_data(data, data_set, data_map, data_pro, deal_data_pro) {
+    function deal_data(data, data_map, data_pro, deal_data_pro) {
         data.forEach(function (value) {
             var keys = deal_data_pro(data_pro == null ? value : value[data_pro])
             if (!keys) return;
@@ -532,27 +531,35 @@ $(function () {
         });
     }
 
+    function deal_area_num_data_arr(obj) {
+        obj["area_arr"]=[];
+        obj["area_map"].forEach(function (value,key) {
+            obj["area_arr"].push([key,value]);
+        })
+    }
+
     function deal_area_num_data(data, data_type_obj) {
-        deal_data(data, data_type_obj.area_arr, data_type_obj.area_map,
+        deal_data(data, data_type_obj.area_map,
             data_type_obj.area_key_value_des,
             data_type_obj.get_area_key);
-        data_type_obj.area_arr=[];
-        data_type_obj.area_map.forEach(function (value,key) {
-            data_type_obj.area_arr.push([key,value]);
+        deal_area_num_data_arr(data_type_obj)
+    }
+
+    function deal_time_num_data_arr(obj) {
+        obj["time_arr"]=[];
+        obj["time_map"].forEach(function (value,key) {
+            obj["time_arr"].push([new Date(+key),value]);
+        })
+        obj["time_arr"].sort(function (a, b) {
+            return d3.ascending(a[0].getTime(),b[0].getTime());
         })
     }
 
     function deal_time_num_data(data, data_type_obj) {
-        deal_data(data, data_type_obj.time_arr, data_type_obj.time_map,
+        deal_data(data, data_type_obj.time_map,
             data_type_obj.time_key_value_des,
             data_type_obj.get_time_key);
-        data_type_obj.time_arr=[];
-        data_type_obj.time_map.forEach(function (value,key) {
-            data_type_obj.time_arr.push([new Date(key),value]);
-        })
-        data_type_obj.time_arr.sort(function (a, b) {
-            return d3.ascending(a[0].getTime(),b[0].getTime());
-        })
+        deal_time_num_data_arr(data_type_obj);
     }
 
     function draw_pie(data_type) {
@@ -616,8 +623,31 @@ $(function () {
                 ,limit:10
                 ,offset:0
                 ,data:[]
+                ,dealedData:null
+                ,dataType:0 //当前数据类型 0 原始数据 ； 1 处理过的数据
+                ,hasUploaded:0 // 0 处理过的数据未上传；1 已上传
             });
         }
+    }
+
+    function check_data_cache_dealed_data_has_upload(recordId) {
+        make_sure_data_cache(recordId);
+        return data_cache.get(recordId)["hasUploaded"]==1;
+    }
+
+    function set_data_cache_dealed_data_has_upload(recordId,state) {
+        make_sure_data_cache(recordId);
+        data_cache.get(recordId)["hasUploaded"]=state;
+    }
+    
+    function getDealedDataUrl(recordId) {
+        make_sure_data_cache(recordId);
+        return "/statistic/getDealedData?recordId="+recordId;
+    }
+    
+    function getCheckRecordExistUrl(recordId) {
+        make_sure_data_cache(recordId);
+        return "/statistic/checkRecordExist?recordId="+recordId;
     }
 
     function getNumOfDataUrl(recordId) {
@@ -660,6 +690,27 @@ $(function () {
         }else
             return false;
     }
+    
+    function get_data_cache_data_type(recordId) {
+        make_sure_data_cache(recordId);
+        return data_cache.get(recordId)["dataType"];
+    }
+    
+    function check_data_cache_complete(recordId) {
+        make_sure_data_cache(recordId);
+        return data_cache.get(recordId)["nextState"]==data_cache_state.complete;
+    }
+
+    function set_data_cache_dealedData(recordId, dealedData) {
+        make_sure_data_cache(recordId);
+        data_cache.get(recordId)["dataType"]=1;
+        data_cache.get(recordId)["dealedData"]=dealedData;
+    }
+
+    function get_data_cache_dealedData(recordId) {
+        make_sure_data_cache(recordId);
+        return data_cache.get(recordId)["dealedData"];
+    }
 
     function update_data_cache_state(recordId, next_state) {
         make_sure_data_cache(recordId);
@@ -674,7 +725,7 @@ $(function () {
     function init_data(recordId) {
         if (!recordId)
             return;
-        work(recordId);
+        work(recordId); // todo 0
     }
 
 
@@ -684,20 +735,20 @@ $(function () {
         if(state==nextState && state==data_cache_state.complete){
             deal_msg("更新视图数据中");
             empty_data();
-            work_with_data(recordId,data_cache.get(recordId)["data"]);
+            work_with_dealedData(recordId);
             deal_msg("更新视图数据完毕");
             return;
         }
         switch(nextState){
             case data_cache_state.init:
-                request_data_init(recordId);
+                request_data_init(recordId); // todo 1
                 break;
             case data_cache_state.working:
                 // setTimeout(request_data_working,2000,recordId);
-                request_data_working(recordId);
+                request_data_working(recordId); // todo 3
                 break;
             case data_cache_state.complete:
-                request_data_complete(recordId);
+                request_data_complete(recordId); // todo 5
                 break;
             default:
                 break;
@@ -718,20 +769,40 @@ $(function () {
         disable_record_select();
         deal_msg("初始化数据加载");
         empty_data();
-        var url = getNumOfDataUrl(recordId);
+        var url = getCheckRecordExistUrl(recordId);//getNumOfDataUrl(recordId);
         request(url)
             .then(function (value) {
-                if (value.errCode != 0) {
-                    deal_msg(value, 'result');
-                    return;
+                if (value.errCode != 0) { // 当前数据未经前端处理 // todo 2
+                    // deal_msg(value, 'result');
+                    url = getNumOfDataUrl(recordId);
+                    request(url)
+                        .then(function (value2) {
+                            var total = +value2.data
+                            if(!update_data_cache_total(recordId,total)){
+                                deal_msg("初始化加载数据出错",'error');
+                                return;
+                            }
+                            update_data_cache_state(recordId,data_cache_state.working);
+                            work(recordId);
+                        },function (reason) {
+                            deal_msg(reason,'error');
+                        })
+                }else{//直接返回处理过的数据
+                    url = getDealedDataUrl(recordId);
+                    request(url)
+                        .then(function (value2) {
+                            if(value2["errCode"]!=0){
+                                deal_msg(value2["msg"],'error');
+                                return;
+                            }
+                            // console.log(value2)
+                            set_data_cache_dealed_data_has_upload(recordId,1);
+                            set_data_cache_dealedData(recordId,JSON.parse(value2["data"]["data"]));
+                            work_with_dealedData(recordId);
+                            update_data_cache_state(recordId,data_cache_state.complete);
+                            work(recordId);
+                        })
                 }
-                var total = +value.data
-                if(!update_data_cache_total(recordId,total)){
-                    deal_msg("初始化加载数据出错",'error');
-                    return;
-                }
-                update_data_cache_state(recordId,data_cache_state.working);
-                work(recordId);
             }, function (reason) {
                 deal_msg(reason, 'error');
             })
@@ -741,7 +812,7 @@ $(function () {
         deal_msg("数据加载中");
         var url = getDataUrl(recordId);
         request(url)
-            .then(function (value) {
+            .then(function (value) { // todo 4
                 if (value.errCode != 0) {
                     deal_msg(value, 'result');
                     return;
@@ -761,6 +832,47 @@ $(function () {
         update_data_cache_state(recordId,data_cache_state.complete);
         enable_record_select();
         deal_msg("数据加载完毕");
+        if(!check_data_cache_dealed_data_has_upload(recordId)){// 表示需要上传处理过的数据 // todo 6
+            set_data_cache_dealed_data_has_upload(recordId,1);
+            var dealedData = get_data_cache_dealedData(recordId);
+            var data = {
+                recordId:recordId
+                ,data:JSON.stringify(dealedData)
+            };
+            if(!dealedData)return;
+            $.ajax({
+                    type:"POST"
+                    ,url:"/statistic/uploadDealedData"
+                    ,data:JSON.stringify(data)
+                    ,success:function (data, textStatus, jqXHR) {
+                        console.log(data,textStatus,jqXHR);
+                    }
+                    ,dataType:"json"
+                    ,contentType:"application/json" // 默认contentType:"application/x-www-form-urlencoded"，与后台需求不匹配
+                });
+        }
+    }
+    
+    function work_with_dealedData(recordId) {
+        var dealedData = get_data_cache_dealedData(recordId);
+        if(!dealedData) return;
+        var merchantInfo = data_types_description[data_types_description_indexes[0]];
+        merchantInfo["area_map"]=util.object2Map(dealedData["merchant"]["area_map"]);
+        deal_area_num_data_arr(merchantInfo);
+        merchantInfo["time_map"]=util.object2Map(dealedData["merchant"]["time_map"]);
+        deal_time_num_data_arr(merchantInfo);
+
+        var goodTypeInfo = data_types_description[data_types_description_indexes[1]];
+        goodTypeInfo["area_map"]=util.object2Map(dealedData["goodType"]["area_map"]);
+        deal_area_num_data_arr(goodTypeInfo);
+        goodTypeInfo["time_map"]=util.object2Map(dealedData["goodType"]["time_map"]);
+        deal_time_num_data_arr(goodTypeInfo);
+
+        var start_end_arr = dealedData["start_end_arr"];
+        deal_start_end_arr(start_end_arr);
+
+        draw(data_type);
+        change_chart_show(chart_type);
     }
 
     function work_with_data(recordId,data){
@@ -775,7 +887,25 @@ $(function () {
             deal_area_num_data(detail[i], data_types_description[data_types_description_indexes[i]]);
             deal_time_num_data(detail[i], data_types_description[data_types_description_indexes[i]]);
         }
-        deal_All_data(recordId);
+        var start_end_arr = deal_All_data(recordId);
+
+        // 当初次访问数据时，得到的初始数据，经过处理，保存到指定位置
+        if(check_data_cache_complete(recordId)){
+            var dealedData = {};
+            var merchantInfo = data_types_description[data_types_description_indexes[0]];
+            var goodTypeInfo = data_types_description[data_types_description_indexes[1]]
+            dealedData["merchant"]={
+                area_map:util.map2Object(merchantInfo["area_map"])
+                ,time_map:util.map2Object(merchantInfo["time_map"])
+            }
+            dealedData["goodType"]={
+                area_map:util.map2Object(goodTypeInfo["area_map"])
+                ,time_map:util.map2Object(goodTypeInfo["time_map"])
+            }
+            dealedData["start_end_arr"]=start_end_arr;
+            set_data_cache_dealedData(recordId,dealedData);
+        }
+
         draw(data_type);
         change_chart_show(chart_type);
     }
@@ -807,6 +937,11 @@ $(function () {
                 })
             }
         }
+        deal_start_end_arr(temp)
+        return temp;
+    }
+
+    function deal_start_end_arr(temp) {
         var temp_map = d3.nest()
             .key(function (d) {
                 return d["producePlace"];
@@ -824,6 +959,7 @@ $(function () {
         chart_with_mutil_select_description["set_data"](temp_map);
         update_filter_select(temp_map);
         chart_with_mutil_select_description["update_data"]();
+        return temp_map;
     }
 
     function show_filter_select() {
@@ -932,7 +1068,7 @@ $(function () {
             record_id = Number($(this).val());
             if (!record_id)
                 return;
-            init_data(record_id, data_type);
+            init_data(record_id);
         })
     }
 
@@ -1059,7 +1195,7 @@ $(function () {
         request(url)
             .then(function (value) {
                 init_chart(value);
-                init_data(record_id, data_type);
+                init_data(record_id);
             }, function (reason) {
                 deal_msg(reason, 'error');
             })

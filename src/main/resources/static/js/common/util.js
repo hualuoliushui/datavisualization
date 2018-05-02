@@ -106,6 +106,25 @@
 
         init();
     }
+
+    function map2Object(map) {
+        let obj = Object.create(null);
+        for(let[k,v] of map){
+            obj[k]=v;
+        }
+        return obj;
+    }
+
+    function object2Map(obj) {
+        let map = new Map();
+        for(let k of Object.keys(obj)){
+            map.set(k,obj[k]);
+        }
+        return map;
+    }
+
+    exports.object2Map = object2Map;
+    exports.map2Object = map2Object;
     exports.isContain = isContain;
     exports.removeItem = removeItem;
     exports.ShowDetailModal = ShowDetailModal;

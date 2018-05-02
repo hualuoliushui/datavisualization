@@ -5,12 +5,11 @@ import com.gss.datavisualization.enums.EntryState;
 import com.gss.datavisualization.enums.ResultState;
 import com.gss.datavisualization.mapper.*;
 import com.gss.datavisualization.model.DataSource;
+import com.gss.datavisualization.repository.RecordRepository;
 import com.gss.datavisualization.returnentity.RecordWithDataSource;
 import com.gss.datavisualization.util.DateUtil;
 import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -110,5 +109,4 @@ public class StatisticService {
     public Result getNewestRecord(int data_source_id){
         return ResultUtil.resultGoodReturner(recordMapper.getNewest(data_source_id));
     }
-
 }

@@ -295,7 +295,7 @@ function ChinaMap(svg){
                         })
                     update_value_range();
                 }))
-            console.log(_miner_g_init_location,_maxer_g_init_location)
+            // console.log(_miner_g_init_location,_maxer_g_init_location)
             _maxer_g.call(d3.drag()
                 .on("drag",function(){
                     _maxer_g_init_location.dy+=d3.event.dy;//鼠标每次移动的精度为1
@@ -663,7 +663,7 @@ function ChinaMap(svg){
         // console.log(type)
         var _this = this;
         clear_interval();
-        draw_type[type](_this,data,data_map,formatStr,"path",detailFormatStr);
+        draw_type[type](_this,data,data_map,formatStr,"line",detailFormatStr);
     }
 
     var sqrt3 = Math.sqrt(3);
