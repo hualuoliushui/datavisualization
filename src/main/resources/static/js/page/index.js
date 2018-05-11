@@ -425,17 +425,21 @@ $(function () {
         var pos = (~companyArea.indexOf("内蒙古") || ~companyArea.indexOf("新疆") || ~companyArea.indexOf("广西") || ~companyArea.indexOf("宁夏") || ~companyArea.indexOf("西藏")) && ~companyArea.indexOf("区")
         pos = pos ? pos : ~companyArea.indexOf("台湾") || ~companyArea.indexOf("香港") || ~companyArea.indexOf("澳门")
         pos = pos ? pos : ~companyArea.indexOf("省") || ~companyArea.indexOf("市") || ~companyArea.indexOf("区")
+        if(-pos<=0)
+            return null;
         return companyArea.substr(0, -pos);
     }
 
     function getCreateYear(createTime) {
         if (!createTime && createTime.length < 4)
-            return;
+            return null;
         return createTime.substr(0, 4);
     }
     
     function getDate(dateStr) {
         var d=new Date(dateStr);
+        if(d.toString()=="Invalid Date")
+            return null;
         return (new Date(d.getFullYear(),d.getMonth())).getTime();
     }
 
@@ -522,6 +526,8 @@ $(function () {
             keys = (keys instanceof Array) ? keys : [keys]
             for (var j = 0, len = keys.length; j < len; j++) {
                 var key = keys[j];
+                if(!key.key)
+                    continue;
                 if (!data_map.has(key.key)) {
                     data_map.set(key.key,key.num);
                 } else {
@@ -1033,7 +1039,7 @@ $(function () {
     function set_sub_title(data_type, str) {
         if (!data_type)
             return;
-        if(data_type>=3){
+        if(data_type>3){
             return;
         }
         $("#sub-title").text(str || data_types_description[data_type].sub_title)

@@ -191,9 +191,6 @@ function ChinaMap(svg){
             // 如果某些省份没有数据，则最小值应为0
             if(data.length<Object.keys(provinces_coordinates).length)
                 min_max[0]=0;
-            var linear = d3.scaleLinear()
-                .domain(min_max)
-                .range([0,1]);
 
             _svg.select("#colorRect")
                 .attr("display",null);
@@ -205,6 +202,10 @@ function ChinaMap(svg){
             _svg.select("#maxValueText")
                 .attr("display",null)
                 .text(min_max[1]);
+
+            var linear = d3.scaleLinear()
+                .domain(min_max)
+                .range([0,1]);
             color_function = function (d,i) {
                 d = _main_china_json_features[i];
                 if(!d) return "white";
@@ -291,7 +292,14 @@ function ChinaMap(svg){
                         .attr("transform","translate("+_miner_g_init_location.x+","+(_miner_g_init_location.dy+_miner_g_init_location.y)+")")
                         .selectAll("text")
                         .text(function () {
-                            return _miner_g_init_location.value.toFixed(1)+"+";
+                            return _miner_g_init_location.value.toFixed(0)+"+";
+                        })
+                    d3.select(this)
+                        .selectAll(".ValueTri")
+                        .attr("fill",function(){
+                            var t = linear(_miner_g_init_location.value);
+                            var t_color = computeColor(t);
+                            return t_color.toString();
                         })
                     update_value_range();
                 }))
@@ -314,7 +322,14 @@ function ChinaMap(svg){
                         .attr("transform","translate("+_maxer_g_init_location.x+","+(_maxer_g_init_location.dy+_maxer_g_init_location.y)+")")
                         .selectAll("text")
                         .text(function () {
-                            return _maxer_g_init_location.value.toFixed(1);
+                            return _maxer_g_init_location.value.toFixed(0);
+                        })
+                    d3.select(this)
+                        .selectAll(".ValueTri")
+                        .attr("fill",function(){
+                            var t = linear(_maxer_g_init_location.value);
+                            var t_color = computeColor(t);
+                            return t_color.toString();
                         })
                     update_value_range();
                 }))

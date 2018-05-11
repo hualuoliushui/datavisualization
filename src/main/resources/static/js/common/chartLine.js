@@ -90,7 +90,7 @@ function ChartLine(svg,timeScale){
 
         _grid = _svg.append("g")
             .attr("class","grid")
-        _area_color = "steelblue";
+        _area_color = "#f7eaea";
         init_axis_tip()
     }
 
@@ -143,8 +143,9 @@ function ChartLine(svg,timeScale){
         var exit = update.exit();
 
         exit.remove();
-        default_set(enter.append("circle"),_area_gen);
-        default_set(update,_area_gen);
+        var gen = _path_gen;
+        default_set(enter.append("circle"),gen);
+        default_set(update,gen);
     }
 
     function draw_data_line(data_set,gen) {
@@ -356,16 +357,16 @@ function ChartLine(svg,timeScale){
             if(!_main_g)return;
             _main_g.selectAll(".data-point")
                 .attr("display",null)
-            _main_g.selectAll(".data-line")
-                .attr("display","none")
+            // _main_g.selectAll(".data-line")
+            //     .attr("display","none")
         }
 
         var hide_point = function () {
             if(!_main_g)return;
             _main_g.selectAll(".data-point")
                 .attr("display","none");
-            _main_g.selectAll(".data-line")
-                .attr("display",null)
+            // _main_g.selectAll(".data-line")
+            //     .attr("display",null)
         }
         if(state)
             show_point();

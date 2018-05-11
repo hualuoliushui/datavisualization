@@ -53,7 +53,7 @@
                             </div>
                         </li>
                         <li class="list-group-item" ng-repeat="dataSource in dataSources" ng-class="{true:'active',false:''}[curDataSourceId==dataSource.id]">
-                            <div class="row">
+                            <div class="row" ng-click="viewRecords(this)">
                                 <div class="col-md-2">{{dataSource.host}}</div>
                                 <div class="col-md-2">{{dataSource.port}}</div>
                                 <div class="col-md-3">{{dataSource.createTime}}</div>
@@ -64,7 +64,7 @@
                                     <input type="button" value="删除" ng-click="deleteDataSource(this)"/>
                                 </div>
                                 <div class="col-md-2">
-                                    <input type="button" value="查看记录" ng-click="viewRecords(this)"/>
+                                    <a ng-show="hasRecords({{dataSource.id}})" href="/?data_source_id={{dataSource.id}}">统计视图</a>
                                 </div>
                             </div>
                         </li>
@@ -76,15 +76,16 @@
                             <div class="row">
                                 <div class="col-md-4">创建时间</div>
                                 <div class="col-md-2">执行结果</div>
-                                <div class="col-md-4">失败原因</div>
                                 <div class="col-md-2"></div>
                             </div>
                         </li>
                         <li class="list-group-item" ng-repeat="record in records">
-                            <div class="row">
+                            <div class="row"  data-toggle="tooltip" title="{{record.errMsg}}" >
                                 <div class="col-md-4">{{record.createTime}}</div>
-                                <div class="col-md-2">{{record.result==1? "成功" : "失败"}}</div>
-                                <div class="col-md-4">{{record.errMsg || ""}}</div>
+                                <div class="col-md-3">
+                                    {{record.result==1? ("成功") : "失败"}}
+                                    <a ng-show="{{record.result==1}}" href="/?record_id={{record.id}}">统计视图</a>
+                                </div>
                                 <div class="col-md-2">
                                     <input type="button" value="删除" ng-click="deleteRecord(this)"/>
                                 </div>

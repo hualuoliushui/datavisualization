@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAsync
 @EnableCaching
 public class DataVisualizationApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(DataVisualizationApplication.class, args);
 	}

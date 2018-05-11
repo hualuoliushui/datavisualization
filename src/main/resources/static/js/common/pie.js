@@ -50,7 +50,7 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
         }
         var pie = d3.pie()
             .value(valueOf);
-        _piedata=pie(dataset);
+        _piedata=pie(_dataset);
         for(var i=0,len=_piedata.length;i<len;i++){
             _piedata[i].color = _piedata[i]["data"].color;
         }
@@ -87,6 +87,12 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
             .attr("fill","none")
             .attr("stroke","red")
             .style("display",null)
+        var dis2 = d.dx*d.dx+d.dy*d.dy;
+        if(dis2 > drag_out_circle_r*drag_out_circle_r) {
+            d3.select(this).attr("stroke","red");
+        }else{
+            d3.select(this).attr("stroke",null)
+        }
     }
 
     function drag_end(d,i) {
@@ -116,7 +122,7 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
 
     }
 
-    var drag_in_line_x = _width/4;
+    var drag_in_line_x = _width/6;
 
     function in_drag_move(d) {
         d.dx+=d3.event.dx;
@@ -131,6 +137,11 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
             .attr("y1",0)
             .attr("x2",drag_in_line_x)
             .attr("y2",_height)
+        if(d.dx>drag_in_line_x) {
+            d3.select(this).attr("stroke","red");
+        }else{
+            d3.select(this).attr("stroke",null)
+        }
     }
     
     function in_drag_end(d, i) {

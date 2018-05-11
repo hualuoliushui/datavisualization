@@ -1,5 +1,6 @@
 var dataSourceApp = angular.module('dataSourceApp',['ngCookies']);
 var recordsMap = {}
+var dataSourceCollectState = {};
 
 dataSourceApp
     .controller('dataSourceController',function ($cookieStore,$scope, $http,$interval,$timeout) {
@@ -27,13 +28,24 @@ dataSourceApp
         setViewRecords($scope);
         // 设置删除记录事件监听
         setDeleteRecord($scope,$http,$timeout);
+        $scope.hasRecords = function (dataSourceId) {
+            if(recordsMap[dataSourceId]){
+                var success_num = 0;
+                recordsMap[dataSourceId].forEach(function(value){
+                    if(value["result"]==1)
+                        success_num++;
+                });
+                if(success_num>0)
+                    return true;
+            }
+            return false;
+        }
     })
     .directive("validHost",function () {
         return {
             require:'ngModel',//缺失的话，ctrl参数会未定义
             restrict:"EA",
             link:function (scope,ele,attrs,ctrl) {
-                console.log("valid")
                 var target = attrs["validHost"];//获取自定义指令属性键值
                 if (target) {//判断键是否存在
                     // scope.$watch(target, function () {//存在启动监听其值
@@ -96,9 +108,9 @@ function deal_msg($scope,obj,type,$timeout) {
             break;
     }
     $scope.msg = msg;
-    var promise = $timeout(function () {
-        $scope.msg = '';
-    },2000);
+    // var promise = $timeout(function () {
+    //     $scope.msg = '';
+    // },1000);
 }
 
 function setDataSources($scope, $http,$timeout) {
@@ -160,6 +172,7 @@ function waitForCompletion($scope, $http,$interval,$timeout, dataSourceId) {
                 deal_msg($scope,"统计完成","success",$timeout);
                 viewRecordsHelper($scope,dataSourceId);
                 $interval.cancel(promise)
+                dataSourceCollectState[dataSourceId]=0;
             }else{
                 deal_msg($scope,"统计中","success",$timeout);
             }
@@ -167,6 +180,7 @@ function waitForCompletion($scope, $http,$interval,$timeout, dataSourceId) {
             deal_msg($scope,reason,'error',$timeout);
             $interval.cancel(promise)
             $scope.collectionState[dataSourceId]=false;
+            dataSourceCollectState[dataSourceId]=0;
         })
     },5000);
 }
@@ -175,6 +189,11 @@ function setStartCollecting($scope, $http,$interval,$timeout) {
     $scope.startCollecting = function (context) {
         if(!context) return;
         var dataSourceId = context.dataSource.id
+        if(dataSourceCollectState[dataSourceId]){
+            deal_msg($scope,"上一个统计未完成，请稍后",'result',$timeout);
+            return;
+        }
+        dataSourceCollectState[dataSourceId]=1;
         $http({
             method:'GET',
             url:'/statistic/startDataCollecting?dataSourceId='+ dataSourceId
@@ -300,8 +319,16 @@ function deleteRecordCache($scope, recordId,dataSourceId) {
 }
 
 function addRecordCache($scope, record, dataSourceId) {
-    if(recordsMap[dataSourceId])
-        recordsMap[dataSourceId].push(record);
+    if(recordsMap[dataSourceId]){
+        var hasSameRecord = false;
+        recordsMap[dataSourceId].forEach(function(value){
+           if(value["id"]==record["id"]){
+               hasSameRecord=true;
+           }
+        });
+        if(!hasSameRecord)
+            recordsMap[dataSourceId].push(record);
+    }
     else
         recordsMap[dataSourceId]=[record];
     if(dataSourceId==$scope.curDataSourceId)
