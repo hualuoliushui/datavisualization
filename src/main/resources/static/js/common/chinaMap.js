@@ -137,7 +137,7 @@ function ChinaMap(svg){
     var path = d3.geoPath(projection)
 
     // 颜色
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    var color = d3.scaleOrdinal(d3.schemeCategory20c);
     var color_start =d3.rgb(0,255,255);
     var color_end = d3.rgb(0,0,255);
     var computeColor = d3.interpolate(color_start,color_end);
@@ -277,6 +277,12 @@ function ChinaMap(svg){
             }
 
             _miner_g.call(d3.drag()
+                .on("start",function(){
+                    d3.select(this).attr("stroke","red");
+                })
+                .on("end",function () {
+                    d3.select(this).attr("stroke",null);
+                })
                 .on("drag",function(){
                     _miner_g_init_location.dy+=d3.event.dy;
                     var temp_y = _miner_g_init_location.dy+_miner_g_init_location.y;
@@ -305,6 +311,12 @@ function ChinaMap(svg){
                 }))
             // console.log(_miner_g_init_location,_maxer_g_init_location)
             _maxer_g.call(d3.drag()
+                .on("start",function(){
+                    d3.select(this).attr("stroke","red");
+                })
+                .on("end",function () {
+                    d3.select(this).attr("stroke",null);
+                })
                 .on("drag",function(){
                     _maxer_g_init_location.dy+=d3.event.dy;//鼠标每次移动的精度为1
                     var temp_y = _maxer_g_init_location.dy+_maxer_g_init_location.y;

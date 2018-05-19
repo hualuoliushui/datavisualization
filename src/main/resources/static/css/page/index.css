@@ -222,3 +222,19 @@ li.multi-select-selected a label {
 .clip_path {
     clip-path: url(#clip);
 }
+
+g.arc {
+    cursor: move;
+}
+
+g.out-g{
+    cursor: move;
+}
+
+g.miner-g{
+    cursor: move;
+}
+
+g.maxer-g{
+    cursor: move;
+}

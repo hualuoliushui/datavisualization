@@ -738,11 +738,13 @@ $(function () {
     function work(recordId) {
         var [state,nextState] = get_data_cache_state(recordId);
         // console.log("recordId:"+recordId,state,nextState);
+        d3.select("body").style("cursor","wait");
         if(state==nextState && state==data_cache_state.complete){
             deal_msg("更新视图数据中");
             empty_data();
             work_with_dealedData(recordId);
             deal_msg("更新视图数据完毕");
+            d3.select("body").style("cursor",null);
             return;
         }
         switch(nextState){
@@ -838,6 +840,7 @@ $(function () {
         update_data_cache_state(recordId,data_cache_state.complete);
         enable_record_select();
         deal_msg("数据加载完毕");
+        d3.select("body").style("cursor",null);
         if(!check_data_cache_dealed_data_has_upload(recordId)){// 表示需要上传处理过的数据 // todo 6
             set_data_cache_dealed_data_has_upload(recordId,1);
             var dealedData = get_data_cache_dealedData(recordId);
