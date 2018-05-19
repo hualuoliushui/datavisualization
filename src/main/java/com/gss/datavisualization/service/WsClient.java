@@ -1,10 +1,8 @@
 package com.gss.datavisualization.service;
 
 import com.gss.datavisualization.webservice.*;
-import com.sun.xml.internal.ws.wsdl.parser.InaccessibleWSDLException;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 
-import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -23,8 +21,9 @@ public class WsClient extends WebServiceGatewaySupport {
         } catch (MalformedURLException e) {
             e.printStackTrace();
             throw new RuntimeException(e.getMessage());
-        } catch (InaccessibleWSDLException e){
-             throw new RuntimeException("连接数据源失败");
+        } catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("连接数据源失败");
         }
 
         statisticPort = statisticPortService.getStatisticPortSoap11();

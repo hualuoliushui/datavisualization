@@ -8,9 +8,9 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>merchant_detail complex typeµÄ Java Àà¡£
+ * <p>merchant_detail complex typeçš„ Java ç±»ã€‚
  * 
- * <p>ÒÔÏÂÄ£Ê½Æ¬¶ÎÖ¸¶¨°üº¬ÔÚ´ËÀàÖĞµÄÔ¤ÆÚÄÚÈİ¡£
+ * <p>ä»¥ä¸‹æ¨¡å¼ç‰‡æ®µæŒ‡å®šåŒ…å«åœ¨æ­¤ç±»ä¸­çš„é¢„æœŸå†…å®¹ã€‚
  * 
  * <pre>
  * &lt;complexType name="merchant_detail">
@@ -75,7 +75,7 @@ public class MerchantDetail {
     protected String businessScope;
 
     /**
-     * »ñÈ¡idÊôĞÔµÄÖµ¡£
+     * è·å–idå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getId() {
@@ -83,7 +83,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃidÊôĞÔµÄÖµ¡£
+     * è®¾ç½®idå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setId(int value) {
@@ -91,7 +91,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡merchantIdÊôĞÔµÄÖµ¡£
+     * è·å–merchantIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getMerchantId() {
@@ -99,7 +99,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃmerchantIdÊôĞÔµÄÖµ¡£
+     * è®¾ç½®merchantIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setMerchantId(int value) {
@@ -107,7 +107,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡createDateÊôĞÔµÄÖµ¡£
+     * è·å–createDateå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -119,7 +119,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃcreateDateÊôĞÔµÄÖµ¡£
+     * è®¾ç½®createDateå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -131,7 +131,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡userNameÊôĞÔµÄÖµ¡£
+     * è·å–userNameå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -143,7 +143,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃuserNameÊôĞÔµÄÖµ¡£
+     * è®¾ç½®userNameå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -155,7 +155,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡merchantNameÊôĞÔµÄÖµ¡£
+     * è·å–merchantNameå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -167,7 +167,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃmerchantNameÊôĞÔµÄÖµ¡£
+     * è®¾ç½®merchantNameå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -179,7 +179,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡companyNameÊôĞÔµÄÖµ¡£
+     * è·å–companyNameå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -191,7 +191,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃcompanyNameÊôĞÔµÄÖµ¡£
+     * è®¾ç½®companyNameå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -203,7 +203,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡companyAreaÊôĞÔµÄÖµ¡£
+     * è·å–companyAreaå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -215,7 +215,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃcompanyAreaÊôĞÔµÄÖµ¡£
+     * è®¾ç½®companyAreaå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -227,7 +227,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡areaCodeÊôĞÔµÄÖµ¡£
+     * è·å–areaCodeå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -239,7 +239,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃareaCodeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®areaCodeå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -251,7 +251,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡gisLocationÊôĞÔµÄÖµ¡£
+     * è·å–gisLocationå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -263,7 +263,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃgisLocationÊôĞÔµÄÖµ¡£
+     * è®¾ç½®gisLocationå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -275,7 +275,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡companyCodeÊôĞÔµÄÖµ¡£
+     * è·å–companyCodeå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -287,7 +287,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃcompanyCodeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®companyCodeå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -299,7 +299,7 @@ public class MerchantDetail {
     }
 
     /**
-     * »ñÈ¡businessScopeÊôĞÔµÄÖµ¡£
+     * è·å–businessScopeå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -311,7 +311,7 @@ public class MerchantDetail {
     }
 
     /**
-     * ÉèÖÃbusinessScopeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®businessScopeå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is

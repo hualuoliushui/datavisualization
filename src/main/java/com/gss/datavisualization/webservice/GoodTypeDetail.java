@@ -10,9 +10,9 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>good_type_detail complex typeµÄ Java Àà¡£
+ * <p>good_type_detail complex typeçš„ Java ç±»ã€‚
  * 
- * <p>ÒÔÏÂÄ£Ê½Æ¬¶ÎÖ¸¶¨°üº¬ÔÚ´ËÀàÖĞµÄÔ¤ÆÚÄÚÈİ¡£
+ * <p>ä»¥ä¸‹æ¨¡å¼ç‰‡æ®µæŒ‡å®šåŒ…å«åœ¨æ­¤ç±»ä¸­çš„é¢„æœŸå†…å®¹ã€‚
  * 
  * <pre>
  * &lt;complexType name="good_type_detail">
@@ -63,7 +63,7 @@ public class GoodTypeDetail {
     protected List<GoodDetail> goodDetails;
 
     /**
-     * »ñÈ¡idÊôĞÔµÄÖµ¡£
+     * è·å–idå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getId() {
@@ -71,7 +71,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * ÉèÖÃidÊôĞÔµÄÖµ¡£
+     * è®¾ç½®idå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setId(int value) {
@@ -79,7 +79,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * »ñÈ¡goodTypeIdÊôĞÔµÄÖµ¡£
+     * è·å–goodTypeIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getGoodTypeId() {
@@ -87,7 +87,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * ÉèÖÃgoodTypeIdÊôĞÔµÄÖµ¡£
+     * è®¾ç½®goodTypeIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setGoodTypeId(int value) {
@@ -95,7 +95,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * »ñÈ¡merchantIdÊôĞÔµÄÖµ¡£
+     * è·å–merchantIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getMerchantId() {
@@ -103,7 +103,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * ÉèÖÃmerchantIdÊôĞÔµÄÖµ¡£
+     * è®¾ç½®merchantIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setMerchantId(int value) {
@@ -111,7 +111,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * »ñÈ¡typeCodeÊôĞÔµÄÖµ¡£
+     * è·å–typeCodeå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -123,7 +123,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * ÉèÖÃtypeCodeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®typeCodeå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -135,7 +135,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * »ñÈ¡typeNameÊôĞÔµÄÖµ¡£
+     * è·å–typeNameå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -147,7 +147,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * ÉèÖÃtypeNameÊôĞÔµÄÖµ¡£
+     * è®¾ç½®typeNameå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -159,7 +159,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * »ñÈ¡producePlaceÊôĞÔµÄÖµ¡£
+     * è·å–producePlaceå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -171,7 +171,7 @@ public class GoodTypeDetail {
     }
 
     /**
-     * ÉèÖÃproducePlaceÊôĞÔµÄÖµ¡£
+     * è®¾ç½®producePlaceå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is

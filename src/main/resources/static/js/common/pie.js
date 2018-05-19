@@ -226,7 +226,7 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
     }
 
     function default_set(formatStr,operator,ele,outerRadius,innerRadius) {
-        var temp = d3.min([_width,_height])*0.5;
+        var temp = d3.min([_width,_height])*0.4;
         outerRadius = outerRadius || temp;
         innerRadius = innerRadius || 0;
         pieCircle.r = outerRadius;
@@ -239,6 +239,7 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
         var text=null
         var line=null
         var lineText=null
+        var lineTextPosRatio = 1.5;
 
         if(operator=='update') {
             ele.each(function (d) {
@@ -249,7 +250,7 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
             path = ele.select('path')
             text = ele.select('.pie-inner-text')
             if(need_lineText) {
-                line = ele.select('.pie-outer-line')
+                // line = ele.select('.pie-outer-line')
                 lineText = ele.select('.pie-outer-text')
             }
         }
@@ -279,11 +280,12 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
                         .attr("d",function (d) {
                             return temp_arc(d);
                         })
+                        .attr("stroke","black");
                     d3.select(this)
                         .select('text')
                         .attr("transform",function (d) {
-                            var x = temp_arc.centroid(d)[0];//文字的x坐标
-                            var y = temp_arc.centroid(d)[1];//文字的y坐标
+                            var x = temp_arc.centroid(d)[0]*lineTextPosRatio;//文字的x坐标
+                            var y = temp_arc.centroid(d)[1]*lineTextPosRatio;//文字的y坐标
                             return "translate("+x+","+y+")";
                         })
                     if(line){
@@ -320,11 +322,12 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
                         .attr("d",function (d) {
                             return arc(d);
                         })
+                        .attr("stroke",null)
                     d3.select(this)
                         .select('text')
                         .attr("transform",function (d) {
-                            var x = arc.centroid(d)[0];//文字的x坐标
-                            var y = arc.centroid(d)[1];//文字的y坐标
+                            var x = arc.centroid(d)[0]*lineTextPosRatio;//文字的x坐标
+                            var y = arc.centroid(d)[1]*lineTextPosRatio;//文字的y坐标
                             return "translate(" + x + "," + y + ")";
                         })
                     if(line){
@@ -358,8 +361,8 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
                 })
             path = arcs_g.append('path')
             text = arcs_g.append('text').classed('pie-inner-text',true)
-            if(line){
-                line = arcs_g.append('line').classed('pie-outer-line',true)
+            if(need_lineText){
+                // line = arcs_g.append('line').classed('pie-outer-line',true)
                 lineText = arcs_g.append('text').classed('pie-outer-text',true)
             }
         }
@@ -380,42 +383,65 @@ function PIE(svg,valueOf,lineTextValueOf,need_lineText) {
                     return arc(d);
                 }
             })
-            // .attr("d",function (d) {
-            //     d["endAngle"]=d["_endAngle"];
-            //     return arc(d);
-            // })
-        
-        setTimeout(function () {
-            text.attr("transform",function (d) {
-                var x = arc.centroid(d)[0];//文字的x坐标
-                var y = arc.centroid(d)[1];//文字的y坐标
-                return "translate("+x+","+y+")";
+        text.attr("text-anchor","middle")
+            .text(_getPercent)
+            .transition()
+            .duration(duration_time)
+            .attrTween("transform",function (d) {
+                return function (t) {
+                    var x = arc.centroid(d)[0]*1.5;//文字的x坐标
+                    var y = arc.centroid(d)[1]*1.5;//文字的y坐标
+                    return "translate("+x+","+y+")";
+                }
             })
-                .attr("text-anchor","middle")
-                .text(_getPercent)
-        },duration_time);
+
+        
+        // setTimeout(function () {
+        //     text.attr("transform",function (d) {
+        //         var x = arc.centroid(d)[0]*1.5;//文字的x坐标
+        //         var y = arc.centroid(d)[1]*1.5;//文字的y坐标
+        //         return "translate("+x+","+y+")";
+        //     })
+        //         .attr("text-anchor","middle")
+        //         .text(_getPercent)
+        // },duration_time);
 
         if(line) {
-            line.attr('stroke','black')
-                .attr('x1',function (d) {
-                    return arc.centroid(d)[0]*2;
+            line.attr('stroke', 'black')
+                .attr('x1', function (d) {
+                    return arc.centroid(d)[0] * 2;
                 })
-                .attr('y1',function (d) {
-                    return arc.centroid(d)[1]*2;
+                .attr('y1', function (d) {
+                    return arc.centroid(d)[1] * 2;
                 })
-                .attr('x2',function (d) {
-                    return arc.centroid(d)[0]*2.2;
+                .attr('x2', function (d) {
+                    return arc.centroid(d)[0] * 2.2;
                 })
-                .attr('y2',function (d) {
-                    return arc.centroid(d)[1]*2.2;
+                .attr('y2', function (d) {
+                    return arc.centroid(d)[1] * 2.2;
                 })
-
-            lineText.attr("transform",function (d) {
-                var x = arc.centroid(d)[0]*2.5;
-                var y = arc.centroid(d)[1]*2.5;
-                return "translate("+x+","+y+")";
-            })
-                .attr('text-anchor','middle')
+        }
+        if(lineText){
+            lineText
+                .each(function (d,i) {
+                    d.angle = (d.startAngle+d._endAngle)/2;
+                })
+                .attr("dy",".35em")
+                .attr("transform",function (d) {
+                    var result = "rotate(" + (d.angle*180/Math.PI-90)+")";
+                    result += "translate("+ (outerRadius+3) + ")";
+                    if(d.angle>Math.PI)
+                        result+="rotate(180)";
+                    return result;
+                })
+                .style("text-anchor",function (d) {
+                    return d.angle > Math.PI ? "end":null;
+                })
+            //     .attr("transform",function (d) {
+            //     var x = arc.centroid(d)[0]*2.5;
+            //     var y = arc.centroid(d)[1]*2.5;
+            //     return "translate("+x+","+y+")";
+            // })
                 .text(lineTextValueOf)
         }
 

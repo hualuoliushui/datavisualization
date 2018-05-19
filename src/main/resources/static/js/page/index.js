@@ -407,7 +407,7 @@ $(function () {
 
     function init_chart(china_json) {
         chart_pie = new PIE(d3.select("#pie").append("svg").attr("width", width)
-            .attr("height", height));
+            .attr("height", height),null,null,true);
         chart_china_map = new ChinaMap(d3.select("#chinaMap").append("svg").attr("width", width)
             .attr("height", height));
         chart_line = new ChartLine(d3.select("#chartLine").append("svg").attr("width", width)

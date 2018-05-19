@@ -8,9 +8,9 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>good_detail complex typeµÄ Java Àà¡£
+ * <p>good_detail complex typeçš„ Java ç±»ã€‚
  * 
- * <p>ÒÔÏÂÄ£Ê½Æ¬¶ÎÖ¸¶¨°üº¬ÔÚ´ËÀàÖĞµÄÔ¤ÆÚÄÚÈİ¡£
+ * <p>ä»¥ä¸‹æ¨¡å¼ç‰‡æ®µæŒ‡å®šåŒ…å«åœ¨æ­¤ç±»ä¸­çš„é¢„æœŸå†…å®¹ã€‚
  * 
  * <pre>
  * &lt;complexType name="good_detail">
@@ -75,7 +75,7 @@ public class GoodDetail {
     protected double starAvg;
 
     /**
-     * »ñÈ¡idÊôĞÔµÄÖµ¡£
+     * è·å–idå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getId() {
@@ -83,7 +83,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃidÊôĞÔµÄÖµ¡£
+     * è®¾ç½®idå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setId(int value) {
@@ -91,7 +91,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡goodIdÊôĞÔµÄÖµ¡£
+     * è·å–goodIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getGoodId() {
@@ -99,7 +99,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃgoodIdÊôĞÔµÄÖµ¡£
+     * è®¾ç½®goodIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setGoodId(int value) {
@@ -107,7 +107,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡goodTypeIdÊôĞÔµÄÖµ¡£
+     * è·å–goodTypeIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getGoodTypeId() {
@@ -115,7 +115,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃgoodTypeIdÊôĞÔµÄÖµ¡£
+     * è®¾ç½®goodTypeIdå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setGoodTypeId(int value) {
@@ -123,7 +123,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡goodBatchÊôĞÔµÄÖµ¡£
+     * è·å–goodBatchå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -135,7 +135,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃgoodBatchÊôĞÔµÄÖµ¡£
+     * è®¾ç½®goodBatchå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -147,7 +147,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡goodCodeÊôĞÔµÄÖµ¡£
+     * è·å–goodCodeå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -159,7 +159,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃgoodCodeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®goodCodeå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -171,7 +171,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡packTypeÊôĞÔµÄÖµ¡£
+     * è·å–packTypeå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -183,7 +183,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃpackTypeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®packTypeå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -195,7 +195,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡goodNumberÊôĞÔµÄÖµ¡£
+     * è·å–goodNumberå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getGoodNumber() {
@@ -203,7 +203,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃgoodNumberÊôĞÔµÄÖµ¡£
+     * è®¾ç½®goodNumberå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setGoodNumber(int value) {
@@ -211,7 +211,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡produceDateÊôĞÔµÄÖµ¡£
+     * è·å–produceDateå±æ€§çš„å€¼ã€‚
      * 
      * @return
      *     possible object is
@@ -223,7 +223,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃproduceDateÊôĞÔµÄÖµ¡£
+     * è®¾ç½®produceDateå±æ€§çš„å€¼ã€‚
      * 
      * @param value
      *     allowed object is
@@ -235,7 +235,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡lifeTimeÊôĞÔµÄÖµ¡£
+     * è·å–lifeTimeå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getLifeTime() {
@@ -243,7 +243,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃlifeTimeÊôĞÔµÄÖµ¡£
+     * è®¾ç½®lifeTimeå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setLifeTime(int value) {
@@ -251,7 +251,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡qrCodeNumÊôĞÔµÄÖµ¡£
+     * è·å–qrCodeNumå±æ€§çš„å€¼ã€‚
      * 
      */
     public int getQrCodeNum() {
@@ -259,7 +259,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃqrCodeNumÊôĞÔµÄÖµ¡£
+     * è®¾ç½®qrCodeNumå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setQrCodeNum(int value) {
@@ -267,7 +267,7 @@ public class GoodDetail {
     }
 
     /**
-     * »ñÈ¡starAvgÊôĞÔµÄÖµ¡£
+     * è·å–starAvgå±æ€§çš„å€¼ã€‚
      * 
      */
     public double getStarAvg() {
@@ -275,7 +275,7 @@ public class GoodDetail {
     }
 
     /**
-     * ÉèÖÃstarAvgÊôĞÔµÄÖµ¡£
+     * è®¾ç½®starAvgå±æ€§çš„å€¼ã€‚
      * 
      */
     public void setStarAvg(double value) {
