@@ -936,14 +936,24 @@ $(function () {
             var goodTypeDetail = goodTypes[i];
             for(var j=0,jlen=goodTypeDetail["goodDetails"].length;j<jlen;j++){
                 var goodDetail = goodTypeDetail["goodDetails"][j];
-                temp.push(
+                let tempObj =
                     {
                         typeName:goodTypeDetail["typeName"]
                         ,producePlace:getProvince(goodTypeDetail["producePlace"])
                         ,salePlace:getProvince(merchants_map.get(goodTypeDetail["merchantId"])["companyArea"])
                         ,produceDate:getCreateYear(goodDetail["produceDate"])
                         ,num:goodDetail["goodNumber"]
-                })
+                };
+                let isNull = false;
+                for(var key in tempObj){
+                    let val = tempObj[key];
+                    if(val==undefined || val=="null" || val==""){
+                        isNull=true;
+                        return;
+                    }
+                }
+                if(!isNull)
+                    temp.push(tempObj);
             }
         }
         deal_start_end_arr(temp)
@@ -951,20 +961,24 @@ $(function () {
     }
 
     function deal_start_end_arr(temp) {
-        var temp_map = d3.nest()
-            .key(function (d) {
-                return d["producePlace"];
-            })
-            .key(function (d) {
-                return d["salePlace"];
-            })
-            .key(function (d) {
-                return d["typeName"];
-            })
-            .key(function (d) {
-                return d["produceDate"];
-            })
-            .map(temp, d3.map);
+        var temp_map = d3.map();
+        if(temp && temp.length>0){
+            temp_map = d3.nest()
+                .key(function (d) {
+                    return d["producePlace"];
+                })
+                .key(function (d) {
+                    return d["salePlace"];
+                })
+                .key(function (d) {
+                    return d["typeName"];
+                })
+                .key(function (d) {
+                    return d["produceDate"];
+                })
+                .map(temp, d3.map);
+        }
+
         chart_with_mutil_select_description["set_data"](temp_map);
         update_filter_select(temp_map);
         chart_with_mutil_select_description["update_data"]();

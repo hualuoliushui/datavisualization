@@ -5,6 +5,7 @@ import com.gss.datavisualization.enums.EntryState;
 import com.gss.datavisualization.enums.ResultState;
 import com.gss.datavisualization.mapper.*;
 import com.gss.datavisualization.model.DataSource;
+import com.gss.datavisualization.model.User;
 import com.gss.datavisualization.repository.RecordRepository;
 import com.gss.datavisualization.returnentity.RecordWithDataSource;
 import com.gss.datavisualization.util.DateUtil;
@@ -12,6 +13,7 @@ import com.gss.datavisualization.util.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ public class StatisticService {
     DataSourceMapper dataSourceMapper;
     @Autowired
     DataCollectionService dataCollectionService;
+    @Autowired
+    UserService userService;
 
     public Result getRecords(int data_source_id, int record_id){
         List<RecordWithDataSource> recordWithDataSources = null;
@@ -82,8 +86,12 @@ public class StatisticService {
         return ResultUtil.resultGoodReturner(map);
     }
 
-    public Result getDataSources() {
-        return ResultUtil.resultGoodReturner(dataSourceMapper.getDataSources());
+    public Result getDataSources(HttpServletRequest request) {
+        User user = userService.getCookie(request);
+        if(user!=null)
+            return ResultUtil.resultGoodReturner(dataSourceMapper.getDataSources(user.getId()));
+        else
+            return ResultUtil.resultBadReturner("用户未登录");
     }
 
     public Result deleteDataSource(int data_source_id){

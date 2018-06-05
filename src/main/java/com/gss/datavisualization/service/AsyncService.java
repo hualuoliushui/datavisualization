@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -68,9 +69,11 @@ public class AsyncService {
             logger.info("record_id:"+getRecord_id());
             ret = goodTypeDetailMapper.insertAll(goodTypeDetails,getRecord_id());
             logger.info("goodTypeDetailMapper.insertAll ret:" + ret);
+            List list = new LinkedList();
             for (GoodTypeDetail goodTypeDetail : goodTypeDetails) {
-                dealGoodDetailList(goodTypeDetail.getGoodDetails());
+                list.addAll(goodTypeDetail.getGoodDetails());
             }
+            dealGoodDetailList(list);
         }
     }
 

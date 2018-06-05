@@ -22,8 +22,8 @@ public interface DataSourceMapper {
     int insertDataSource(DataSource dataSource);
 
     @Select("select * from " + tableName + " " +
-            "where deleted="+EntryState.USING)
-    List<DataSource> getDataSources();
+            "where deleted="+EntryState.USING + " and userId=#{userId}")
+    List<DataSource> getDataSources(@Param("userId")int userId);
 
     @Select("select * from " + tableName + " " +
             "where id=#{id} and deleted=" + EntryState.USING +" limit 1")

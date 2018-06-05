@@ -169,7 +169,7 @@ function ChinaMap(svg){
     
     function draw_normal(context,data, data_map,formatStr){
         var _this=context;
-        if(data && data_map){
+        if(data && data.length>0 && data_map){
             hide_flow_eles();
             _this.ToolTipMouseOver(function (event,d,i) {
                 d = _main_china_json_features[i];

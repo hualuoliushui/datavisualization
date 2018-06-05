@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import sun.misc.Request;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @create 2018-03-14 16:01
  * @desc
@@ -83,8 +85,8 @@ public class StatisticController {
     }
 
     @RequestMapping(value = "/getDataSources",method = RequestMethod.GET)
-    public Object getDataSources(){
-        return statisticService.getDataSources();
+    public Object getDataSources(HttpServletRequest request){
+        return statisticService.getDataSources(request);
     }
 
     @RequestMapping(value = "/deleteDataSource",method = RequestMethod.GET)
